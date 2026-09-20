@@ -209,7 +209,7 @@ function dotList(slide, items, x, y, w, step, o = {}) {
     ["Less time on the road", "Each day groups nearby places; stops are ordered by distance."],
     ["A budget you can read", "Stay, food, transport and activities, with total and per-person cost in INR."],
     ["Try before sign-up", "Anyone can preview a plan. Login is needed only to save it."],
-    ["Works without the internet", "Seeded data and a local distance provider by default; Google APIs are optional."],
+    ["Works without the internet", "Seeded data and a local distance provider by default; OpenStreetMap and Google are optional."],
     ["Secure and tested", "JWT authentication, validated input, trips visible only to their owner, automated tests."],
   ];
   const gap = 0.3, cw = (CW - gap * 2) / 3, ch = 2.1, y0 = 1.95;
@@ -306,7 +306,7 @@ function dotList(slide, items, x, y, w, step, o = {}) {
     notes: say(udit,
       "Three tiers. The React client talks only to our REST API under /api/v1; the API is layered as routes, controllers and services; MongoDB holds four collections. " +
       "The six blocks below are the services where the logic lives. Controllers only handle HTTP, so itinerary and budget are pure functions that we can unit test. " +
-      "Providers hide where distance and places come from: local by default, Google when a key is configured."),
+      "Providers hide where distance and places come from: local by default, OpenStreetMap/OSRM or Google by configuration."),
   });
 
   const tiers = [
@@ -332,7 +332,7 @@ function dotList(slide, items, x, y, w, step, o = {}) {
     ["Itinerary", "Scores activities, builds days by nearest stop, schedules times."],
     ["Budget", "Tier-based estimate: stay, food, transport, activities."],
     ["Trip", "Saves plans, enforces ownership, updates notes and status."],
-    ["Providers", "Route and Places adapters: local default, Google optional."],
+    ["Providers", "Route and Places adapters: local, OpenStreetMap (free) or Google."],
   ];
   const sg = 0.2, sw = (CW - sg * 5) / 6, sy = 4.3, sh = 2.15;
   services.forEach(([h, b], i) => {
@@ -450,16 +450,16 @@ diagramSlide({
   kicker: "Part 2 · Proposed system",
   title: "Core Components — System Architecture",
   file: "architecture.png",
-  caption: "Browser → REST API → MongoDB. Google services are optional; every call falls back to the local provider.",
+  caption: "Browser → REST API → MongoDB. External map services are optional; every call falls back to the local provider.",
   notice: [
     "The client never touches the database; everything goes through /api/v1.",
     "Controllers are thin. Itinerary and budget logic sit in services.",
-    "Providers pick local or Google from configuration, with a 4-second timeout.",
+    "Providers pick local, OpenStreetMap or Google from configuration, with a 4-second timeout.",
   ],
   notes: say(udit,
     "Same three tiers, now as deployed for the demo: Vite dev server on 5173 proxies /api to Express on 4100, MongoDB 7 runs in Docker on 27017. " +
     "Follow one request: page, apiClient, route, validate middleware, controller, service, model. " +
-    "If a Google key is set the providers call Places and Distance Matrix with a 4-second timeout, otherwise, or on any failure, the local provider answers."),
+    "When the provider is set to OpenStreetMap or Google the providers call the external places and distance services with a timeout, otherwise, or on any failure, the local provider answers."),
 });
 
 // ================================ 10. How itinerary + budget are computed
@@ -524,7 +524,7 @@ diagramSlide({
     notes: say(hardik,
       "The stack is MERN with JavaScript end to end. On the client React 18 with Vite and React Router, and hand-written CSS with design tokens, no UI kit. " +
       "On the server Node 20 and Express, with Zod for validation and JWT plus bcrypt for security. MongoDB 7 with Mongoose, run through Docker Compose. " +
-      "Google Places and Distance Matrix are optional. Vitest and Supertest for tests, Git for version control."),
+      "OpenStreetMap Overpass and OSRM are the free map services; Google Places and Distance Matrix are optional. Vitest and Supertest for tests, Git for version control."),
   });
 
   table(s, ["Layer", "Technology", "Role in the project"], [
@@ -533,7 +533,7 @@ diagramSlide({
     ["Backend", "Node.js 20+, Express.js (ES modules)", "REST API under /api/v1 with a uniform response envelope"],
     ["Security", "JWT, bcrypt, Zod, helmet, cors, rate limit", "Login tokens, password hashing, input validation, hardening"],
     ["Database", "MongoDB 7, Mongoose", "Four collections; itinerary and budget embedded in a trip"],
-    ["External APIs", "Google Places API, Distance Matrix API", "Optional discovery and road distance; local fallback"],
+    ["External APIs", "Overpass (OpenStreetMap), OSRM; optional Google Places, Distance Matrix", "Place discovery and road distance; local fallback"],
     ["Testing", "Vitest, Supertest, mongodb-memory-server", "Unit tests for services, API tests on an in-memory database"],
     ["Tooling", "Git, Docker Compose, npm", "Version control, one-command database, scripts and seed"],
   ], MX, 1.95, [1.9, 4.5, CW - 6.4], { fontSize: 12.5, rowH: 0.5 });
@@ -547,8 +547,8 @@ diagramSlide({
     title: "Assumptions and Constraints",
     notes: say(udit,
       "Assumptions are what the estimate takes for granted: two travellers share a room, nights are days minus one, costs are daily averages per tier, " +
-      "and without Google the road distance is straight-line times 1.3 at 25 km per hour. " +
-      "Constraints are hard limits in the code: twelve destinations, up to fourteen days, up to twelve travellers, a four-second timeout on Google calls, and twenty auth requests per fifteen minutes per IP."),
+      "and with the local provider the road distance is straight-line times 1.3 at 25 km per hour. " +
+      "Constraints are hard limits in the code: twelve destinations, up to fourteen days, up to twelve travellers, a four-second timeout on external route calls, and twenty auth requests per fifteen minutes per IP."),
   });
 
   const lw = 5.6;
@@ -568,7 +568,7 @@ diagramSlide({
     ["12", "seeded Indian destinations"],
     ["1–14", "days per trip"],
     ["1–12", "travellers per trip"],
-    ["4 s", "Google API timeout, then local fallback"],
+    ["4 s", "External API timeout, then local fallback"],
     ["20 / 15 min", "auth requests allowed per IP"],
     ["Node 20+", "and MongoDB 7 to run the system"],
   ];
@@ -679,12 +679,12 @@ diagramSlide({
   notice: [
     "Registered Traveller inherits every use case of the Guest.",
     "Plan trip includes Generate itinerary and Estimate budget.",
-    "Save trip extends Plan trip only when logged in. The two Google APIs are external actors.",
+    "Save trip extends Plan trip only when logged in. The Places and Route APIs are external actors.",
   ],
   notes: say(vraj,
     "Two human actors. A guest can browse destinations, view details, discover nearby places and generate a plan preview. " +
     "A registered traveller does all of that and also saves trips, views My Trips, updates notes and status, and deletes. " +
-    "Generating a plan always includes building the itinerary and estimating the budget. The Google services appear as an external, optional actor."),
+    "Generating a plan always includes building the itinerary and estimating the budget. The map services appear as external, optional actors."),
 });
 
 diagramSlide({
@@ -762,7 +762,7 @@ diagramSlide({
   notice: [
     "User 1 — many Trip; Destination 1 — many Activity and Trip.",
     "ItineraryItem is a snapshot of an Activity, so a saved trip never changes.",
-    "Route and Places providers are interfaces; Google implementations fall back to local.",
+    "Route and Places providers are interfaces; OpenStreetMap and Google implementations fall back to local.",
   ],
   notes: say(vraj,
     "Four persistent classes that map one to one to MongoDB collections: User, Destination, Activity and Trip. " +
@@ -772,7 +772,7 @@ diagramSlide({
 
 // ================================================= 22–26. Data Dictionary
 
-const DD_HEAD = ["Field", "Type", "Constraints", "Description"];
+const DD_HEAD = ["Field name", "Datatype", "Constrains", "Description"];
 const DD_COLS = [1.8, 2.5, 4.2, CW - 8.5];
 const mono = (t) => ({ text: t, mono: true, bold: true });
 

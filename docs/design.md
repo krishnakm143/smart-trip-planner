@@ -86,11 +86,15 @@ MONGODB_URI=mongodb://localhost:27017/smart_trip_planner
 JWT_SECRET=change-me-to-a-long-random-string
 JWT_EXPIRES_IN=7d
 CLIENT_ORIGIN=http://localhost:5173
+MAPS_PROVIDER=local
 GOOGLE_MAPS_API_KEY=
 ```
 
-`GOOGLE_MAPS_API_KEY` empty → local providers. Present → Google providers with
-automatic fallback to local on any upstream failure.
+`MAPS_PROVIDER` selects the route and places providers: `local` (seeded data,
+haversine), `osm` (OpenStreetMap Overpass + OSRM, free, no key) or `google`
+(needs `GOOGLE_MAPS_API_KEY`). When it is not set, a present key means `google`
+and an empty key means `local`. Remote providers fall back to local on any
+upstream failure.
 
 ## 3. Data model (MongoDB collections)
 
@@ -230,11 +234,12 @@ provider makes a single Distance Matrix request instead of one per leg.
 | Provider | Route | Places |
 |---|---|---|
 | **local** (default) | haversine × 1.3 road factor, 25 km/h average | reads `activities` collection |
+| **osm** | OSRM table service (public server), one request per plan | Overpass API: named attractions within 12 km, Wikidata-linked places first, cached for one hour |
 | **google** (key set) | Distance Matrix API | Places API (New) `places:searchText` — "tourist attractions in `<name>, <state>`" |
 
-`providers/index.js` picks the implementation from config. Google providers wrap
-every call in try/catch with a 4 s timeout and fall back to local, logging a
-warning. Responses carry `meta.provider` so the UI can label the source.
+`providers/index.js` picks the implementation from config. Remote providers wrap
+every call in try/catch with a timeout (4 s for routes, 6 s for Overpass) and
+fall back to local, logging a warning. Responses carry `meta.provider` so the UI can label the source.
 
 ## 5. REST API contract
 
@@ -254,7 +259,7 @@ Invalid ObjectId in a path → 400 `VALIDATION_ERROR`. A trip owned by someone e
 ### Health
 | Method | Path | Response `data` |
 |---|---|---|
-| GET | `/health` | `{ status: "ok", db: "connected", provider: "local" \| "google" }` |
+| GET | `/health` | `{ status: "ok", db: "connected", provider: "local" \| "osm" \| "google" }` |
 
 ### Auth
 | Method | Path | Body | Response `data` |

@@ -10,6 +10,7 @@
         { "name": "Itinerary service — scoring, routing, scheduling", "status": "done" },
         { "name": "Budget service — tier-based estimate", "status": "done" },
         { "name": "Trips API — save, list, update, delete, ownership", "status": "done" },
+        { "name": "OpenStreetMap places + OSRM road distances (live)", "status": "done" },
         { "name": "Google Places / Distance providers — live-key testing", "status": "in-progress" },
         { "name": "Automated tests — unit + API", "status": "done" }
       ]

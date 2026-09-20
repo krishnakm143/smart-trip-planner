@@ -9,8 +9,8 @@ actor "Registered\nTraveller" as Trav
 actor "Guest\n(Visitor)" as Guest
 Trav -|> Guest
 
-actor "Google Places\nAPI" as GP <<external system>>
-actor "Google Distance\nMatrix API" as GDM <<external system>>
+actor "Places API\n(OpenStreetMap\nor Google)" as GP <<external system>>
+actor "Route API\n(OSRM or Google)" as GDM <<external system>>
 
 rectangle "Smart Trip Planner" {
   usecase "Delete trip" as UC14

@@ -37,28 +37,35 @@ class BudgetService <<service>> {
 }
 
 interface RouteProvider <<interface>> {
+  +getMatrix(points : GeoPoint[]) : RouteMatrix
   +getLeg(from : GeoPoint, to : GeoPoint) : {km, minutes}
 }
 interface PlacesProvider <<interface>> {
-  +discover(destination, type) : DiscoveredPlace[]
+  +discover(destination, type) : {provider, items}
 }
 class LocalRouteProvider {
   -ROAD_FACTOR : Number = 1.3
   -AVG_SPEED_KMH : Number = 25
-  +getLeg(from, to) : {km, minutes}
+  +getMatrix(points) : RouteMatrix
 }
 class GoogleRouteProvider {
   -apiKey : String
-  -timeoutMs : Number = 4000
-  +getLeg(from, to) : {km, minutes}
+  +getMatrix(points) : RouteMatrix
+}
+class OsmRouteProvider {
+  -TABLE_URL : String
+  +getMatrix(points) : RouteMatrix
 }
 class LocalPlacesProvider {
-  +discover(destination, type) : DiscoveredPlace[]
+  +discover(destination, type)
 }
 class GooglePlacesProvider {
   -apiKey : String
-  -timeoutMs : Number = 4000
-  +discover(destination, type) : DiscoveredPlace[]
+  +discover(destination, type)
+}
+class OsmPlacesProvider {
+  -cache : Map
+  +discover(destination, type)
 }
 
 TripService ..> ItineraryService : <<use>>
@@ -69,10 +76,14 @@ AuthService -[hidden]right- TripService
 
 RouteProvider <|.. LocalRouteProvider
 RouteProvider <|.. GoogleRouteProvider
+RouteProvider <|.. OsmRouteProvider
 PlacesProvider <|.. LocalPlacesProvider
 PlacesProvider <|.. GooglePlacesProvider
-GoogleRouteProvider -right-> LocalRouteProvider : fallback
-GooglePlacesProvider -right-> LocalPlacesProvider : fallback
+PlacesProvider <|.. OsmPlacesProvider
+GoogleRouteProvider ..> LocalRouteProvider : fallback
+OsmRouteProvider ..> LocalRouteProvider : fallback
+GooglePlacesProvider ..> LocalPlacesProvider : fallback
+OsmPlacesProvider ..> LocalPlacesProvider : fallback
 
 note bottom of AuthService
   Services operate on the Mongoose models

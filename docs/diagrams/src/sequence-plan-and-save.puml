@@ -22,10 +22,10 @@ DB --> PC : destination, activities[]
 PC -> IS : generateItinerary(\nactivities, days, pace,\ninterests, startDate,\nrouteProvider)
 loop each day, each candidate stop
   IS -> RP : getLeg(from, to)
-  alt Google key set, reply < 4 s
-    RP -> RP : call Google\nDistance Matrix API
+  alt remote provider configured, reply < 4 s
+    RP -> RP : call OSRM table service\nor Google Distance Matrix
     RP --> IS : { km, minutes }
-  else no key / timeout / error
+  else local provider / timeout / error
     RP -> RP : local fallback:\nhaversine x 1.3,\n25 km/h; log warning
     RP --> IS : { km, minutes }\n(provider = local)
   end

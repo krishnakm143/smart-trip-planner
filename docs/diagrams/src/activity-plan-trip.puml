@@ -32,7 +32,7 @@ repeat
   unassigned activity;
   |MongoDB / Providers|
   :RouteProvider.getLeg(from, to):
-  Google Distance Matrix, or
+  OSRM / Google Distance Matrix, or
   local haversine fallback;
   |Express API|
   :Add nearest activities while visit + travel

@@ -109,23 +109,26 @@ const caption = (text, opts = {}) => new Paragraph({
   children: [new TextRun({ text, font: FONT, size: 22, bold: true })],
 });
 
-function cell(text, width, { header = false, size = 20 } = {}) {
+const DD_HEADER_FILL = '4BACC6';
+
+function cell(text, width, { header = false, size = 20, dd = false } = {}) {
   const lines = Array.isArray(text) ? text : [String(text)];
   return new TableCell({
     width: { size: width, type: WidthType.DXA },
     borders: BORDERS,
-    verticalAlign: header ? VerticalAlign.CENTER : VerticalAlign.TOP,
-    shading: header ? { type: ShadingType.CLEAR, fill: ACCENT_FILL, color: 'auto' } : undefined,
+    verticalAlign: header || dd ? VerticalAlign.CENTER : VerticalAlign.TOP,
+    shading: header ? { type: ShadingType.CLEAR, fill: dd ? DD_HEADER_FILL : ACCENT_FILL, color: 'auto' } : undefined,
     margins: { top: 50, bottom: 50, left: 90, right: 90 },
     children: lines.map((l) => new Paragraph({
-      alignment: AlignmentType.LEFT,
+      alignment: dd ? AlignmentType.CENTER : AlignmentType.LEFT,
       spacing: { line: 250, lineRule: LineRuleType.AUTO, after: lines.length > 1 ? 40 : 0 },
-      children: runs(l, { size, bold: header }),
+      children: runs(l, { size, bold: header, color: header && dd ? 'FFFFFF' : undefined }),
     })),
   });
 }
 
-function table({ headers, rows, widths, fontSize }, pageW = TEXT_W) {
+function table({ headers, rows, widths, fontSize, style }, pageW = TEXT_W) {
+  const dd = style === 'dd';
   const sum = widths.reduce((a, b) => a + b, 0);
   const w = widths.map((x) => Math.round((x / sum) * pageW));
   w[w.length - 1] += pageW - w.reduce((a, b) => a + b, 0);
@@ -135,8 +138,8 @@ function table({ headers, rows, widths, fontSize }, pageW = TEXT_W) {
     columnWidths: w,
     alignment: AlignmentType.CENTER,
     rows: [
-      new TableRow({ tableHeader: true, cantSplit: true, children: headers.map((h, i) => cell(h, w[i], { header: true, size })) }),
-      ...rows.map((r) => new TableRow({ cantSplit: true, children: r.map((c, i) => cell(c, w[i], { size })) })),
+      new TableRow({ tableHeader: true, cantSplit: true, children: headers.map((h, i) => cell(h, w[i], { header: true, size, dd })) }),
+      ...rows.map((r) => new TableRow({ cantSplit: true, children: r.map((c, i) => cell(c, w[i], { size, dd })) })),
     ],
   });
 }

@@ -24,7 +24,7 @@ docker compose up -d
 cd server
 cp .env.example .env        # then set JWT_SECRET to a long random string
 npm install
-npm run seed                # 12 destinations, 120 activities, one demo user
+npm run seed                # 12 destinations, 120 activities, 5 users, 5 sample trips
 npm run dev
 
 # 3. client -> http://localhost:5173
@@ -35,10 +35,15 @@ npm run dev
 
 Demo login: `demo@smarttrip.in` / `Demo@1234`
 
-Leaving `GOOGLE_MAPS_API_KEY` empty in `server/.env` keeps the app on its local
-providers (seeded places, haversine distances), so it runs without internet.
-Setting the key switches route legs and "discover nearby" to Google, with an
-automatic fallback to the local providers if a request fails.
+`MAPS_PROVIDER` in `server/.env` chooses where places and road distances come from:
+
+| Value | Places | Road distance | Needs |
+|---|---|---|---|
+| `local` | seeded activities | haversine x 1.3 at 25 km/h | nothing, works offline |
+| `osm` | OpenStreetMap via the Overpass API | OSRM table service | internet, no key |
+| `google` | Google Places API (New) | Google Distance Matrix | `GOOGLE_MAPS_API_KEY` |
+
+The remote providers fall back to `local` whenever a request fails or times out.
 
 ## How a plan is computed
 

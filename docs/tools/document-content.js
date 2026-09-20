@@ -3,6 +3,8 @@
  * Everything here is derived from docs/design.md — if the design changes, change it here too.
  * Inline markup understood by build-document.js: **bold**, `code`, [[PLACEHOLDER]].
  */
+const records = require('./sample-records.json');
+
 module.exports = (team) => {
   const body = [];
   const numberedRefs = [];
@@ -16,11 +18,41 @@ module.exports = (team) => {
   const table = (caption, headers, widths, rows, fontSize) => body.push({ type: 'table', caption, headers, widths, rows, fontSize });
   // Zero-width spaces let long camelCase / dotted identifiers wrap at sensible places in narrow columns.
   const softBreak = (t) => (t.length > 13 ? t.replace(/([a-z])([A-Z])/g, '$1\u200B$2').replace(/\./g, '.\u200B') : t);
-  const ddTable = (caption, rows) => table(caption, DD_HEAD, DD_W, rows.map((r) => [softBreak(r[0]), softBreak(r[1]), ...r.slice(2)]));
+  // Data dictionary tables follow the format prescribed by the department:
+  // Table Name, then Field name | Datatype | Len | Constrains | Description.
+  const ddLen = (type, size) => {
+    if (type === 'ObjectId') return '24';
+    const chars = size.match(/(\d+)\s+characters/);
+    return chars ? chars[1] : '-';
+  };
+  const ddConstraints = (size, text) => {
+    const range = /^[\d.]+–[\d.]+$/.test(size) ? `; range ${size}` : '';
+    return (text + range)
+      .replace(/Primary key; generated automatically/, 'PK, NOT NULL, AUTO GENERATED')
+      .replace(/Foreign key/g, 'FK')
+      .replace(/\brequired\b/gi, 'NOT NULL')
+      .replace(/\bunique\b/gi, 'UNIQUE')
+      .replace(/\bOptional\b/g, 'NULL')
+      .replace(/\bdefault\b/gi, 'DEFAULT')
+      .replace(/\bindexed\b/g, 'INDEX')
+      .replace(/\bEnum:/g, 'ENUM:');
+  };
+  const ddTable = (caption, rows) => {
+    p(`**Table Name:** \`${caption.split('— ')[1].split(' (')[0]}\``, { keepNext: true });
+    body.push({
+      type: 'table',
+      caption,
+      style: 'dd',
+      headers: DD_HEAD,
+      widths: DD_W,
+      rows: rows.map((r) => [softBreak(r[0]), softBreak(r[1]), ddLen(r[1], r[2]), ddConstraints(r[2], r[3]), r[4]]),
+    });
+  };
+  const recordsTable = (caption, headers, widths, rows) =>
+    body.push({ type: 'table', caption, style: 'dd', headers, widths, rows: rows.map((r) => r.map(String)), fontSize: 17 });
   const figure = (file, caption, opts = {}) => body.push({ type: 'figure', file, caption, ...opts });
-
-  const DD_HEAD = ['Field', 'Data Type', 'Size / Range', 'Constraints', 'Description'];
-  const DD_W = [19, 14, 16, 25, 26];
+  const DD_HEAD = ['Field name', 'Datatype', 'Len', 'Constrains', 'Description'];
+  const DD_W = [20, 14, 7, 30, 29];
   const TS_ROWS = [
     ['createdAt', 'Date', 'ISO 8601 timestamp', 'Set automatically on insert (Mongoose timestamps)', 'Date and time the document was created'],
     ['updatedAt', 'Date', 'ISO 8601 timestamp', 'Set automatically on every update (Mongoose timestamps)', 'Date and time of the last modification'],
@@ -69,7 +101,7 @@ module.exports = (team) => {
     'To generate a deterministic day-wise itinerary for a selected destination from the travel dates, interests and pace given by the traveller, using a scoring rule and a nearest-neighbour ordering of stops.',
     'To estimate the trip budget for three tiers (economy, standard, luxury) using a transparent formula and to present the break-up, the total and the per-person cost in Indian Rupees.',
     'To allow a plan to be previewed without login and to be saved, listed, viewed, updated and deleted by a registered traveller, with each traveller able to access only his or her own trips.',
-    'To integrate external place and distance services (Google Places API and Google Distance Matrix API) through replaceable provider adapters, while remaining fully functional without them.',
+    'To integrate external place and distance services (OpenStreetMap Overpass and OSRM, which are free, and optionally Google Places and Google Distance Matrix) through replaceable provider adapters, while remaining fully functional without them.',
     'To expose all functionality through a documented REST API with a uniform response format, input validation and standard security measures.',
   ]);
 
@@ -88,7 +120,7 @@ module.exports = (team) => {
   bullets([
     'Public browsing of 12 seeded Indian destinations (Manali, Goa, Jaipur, Udaipur, Munnar, Alleppey, Rishikesh, Varanasi, Darjeeling, Jaisalmer, Kutch and Leh-Ladakh) with keyword search, category filter and pagination.',
     'Destination details: overview, best season, ideal number of days, daily cost table for the three tiers and the list of activities.',
-    'Discovery of nearby places for a destination through the places provider (local data, or Google Places when an API key is configured).',
+    'Discovery of nearby places for a destination through the places provider (local data, OpenStreetMap, or Google Places when an API key is configured).',
     'Trip planning form, generation of the day-wise itinerary and the budget estimate, and preview of the result without login.',
     'User registration, login, session restore and logout using JSON Web Tokens.',
     'My Trips: saving a plan, listing saved trips (optionally by status), viewing a trip, editing title, notes and status, and deleting a trip.',
@@ -106,7 +138,7 @@ module.exports = (team) => {
   ]);
 
   h2('1.6 Core Components');
-  p('The application follows a three-tier architecture. The presentation tier is a React single-page application that runs in the browser. The application tier is a Node.js/Express REST API organised in layers — middleware, routes and controllers, services, Mongoose models and provider adapters. The data tier is a MongoDB database. External Google services are reached only through the provider adapters, so that the rest of the system does not depend on them. Figure 1.1 shows the architecture and Table 1.1 lists the modules.');
+  p('The application follows a three-tier architecture. The presentation tier is a React single-page application that runs in the browser. The application tier is a Node.js/Express REST API organised in layers — middleware, routes and controllers, services, Mongoose models and provider adapters. The data tier is a MongoDB database. External map services (OpenStreetMap/OSRM or Google) are reached only through the provider adapters, so that the rest of the system does not depend on them. Figure 1.1 shows the architecture and Table 1.1 lists the modules.');
   figure('architecture.png', 'Figure 1.1: System Architecture of Smart Trip Planner', { landscape: true });
   table('Table 1.1: Core Components (Modules) of the System', ['Module', 'Responsibility', 'Main elements'], [18, 38, 44], [
     ['Authentication', 'Registration, login, password hashing, issue and verification of JSON Web Tokens, session restore, protection of private routes.', '`authService`, `auth` middleware, `/auth/*` routes; `AuthContext`, `ProtectedRoute`, Login and Register pages'],
@@ -116,7 +148,7 @@ module.exports = (team) => {
     ['Itinerary Generator', 'Scores activities, fills each day up to the capacity of the pace, orders stops by distance, schedules start and end times.', '`itineraryService`, `RouteProvider`, `utils/geo`, time helpers'],
     ['Budget Estimator', 'Pure function that computes rooms, nights, the four cost components, the total and the per-person amount.', '`budgetService`, `/budget/estimate` route, `BudgetBreakdown` component'],
     ['My Trips', 'Create, list, read, update and delete saved trips of the logged-in user with ownership isolation.', '`Trip` model, `tripService`, `/trips` routes; My Trips and Trip Details pages'],
-    ['Provider adapters', 'Uniform interfaces for route and place data with a local implementation and a Google implementation that falls back to local on failure.', '`providers/` (local, google, `index.js`)'],
+    ['Provider adapters', 'Uniform interfaces for route and place data with a local implementation and OpenStreetMap and Google implementations that fall back to local on failure.', '`providers/` (local, osm, google, `index.js`)'],
   ]);
 
   h2('1.7 Development Tools and Technologies');
@@ -133,6 +165,7 @@ module.exports = (team) => {
     ['Zod', '4.x — request validation', 'Declarative schemas per route; validation errors are converted to a uniform `VALIDATION_ERROR` response with field-level details.'],
     ['jsonwebtoken, bcryptjs', '9.x, 3.x — authentication', 'Stateless token-based sessions suitable for a single-page application; bcrypt is a deliberately slow, salted password hash.'],
     ['helmet, cors, express-rate-limit, morgan', 'Security and logging middleware', 'Standard HTTP hardening, origin restriction, brute-force protection on `/auth/*` and request logging in development.'],
+    ['OpenStreetMap Overpass API, OSRM table service', 'Free external services (no key)', 'Live place discovery and road distances and times from OpenStreetMap data; selected with `MAPS_PROVIDER=osm`.'],
     ['Google Places API (New), Google Distance Matrix API', 'Optional external services', 'Real place search and road distances when an API key is available; isolated behind provider interfaces.'],
     ['Vitest, Supertest, mongodb-memory-server', '5.x, 7.x, 11.x — testing', 'Unit tests for the algorithms and API tests against an in-memory database, without touching development data.'],
     ['ESLint', 'Static analysis', 'Consistent code style and early detection of common mistakes in both workspaces.'],
@@ -151,7 +184,7 @@ module.exports = (team) => {
     ['Runtime', 'Node.js 20 or later with npm'],
     ['Database', 'MongoDB 7 — through Docker Desktop / Docker Compose (`mongo:7`), or a local MongoDB installation on port 27017'],
     ['Tools', 'Git, a code editor such as Visual Studio Code, a modern web browser with developer tools'],
-    ['Network', 'Internet connection for installing packages; required at run time only when the Google providers are enabled'],
+    ['Network', 'Internet connection for installing packages; required at run time only when the OpenStreetMap or Google providers are enabled'],
     ['Optional', 'Google Maps Platform API key (`GOOGLE_MAPS_API_KEY`) with Places API (New) and Distance Matrix API enabled'],
   ]);
   table('Table 1.4: Requirements for End Users', ['Item', 'Requirement'], [30, 70], [
@@ -169,14 +202,14 @@ module.exports = (team) => {
     'All amounts are in Indian Rupees and are stored as whole rupees.',
     'Two travellers share one room, therefore the number of rooms is the number of travellers divided by two, rounded up.',
     'Food and local transport costs are per person per day; the stay cost is per room per night.',
-    'Without the Google provider, road distance is approximated as the great-circle (haversine) distance multiplied by a road factor of 1.3, and local travel speed is taken as 25 km/h.',
+    'With the local provider, road distance is approximated as the great-circle (haversine) distance multiplied by a road factor of 1.3, and local travel speed is taken as 25 km/h.',
     'Sightseeing starts at 09:00 and one 60-minute lunch break is taken per day.',
     'A trip concerns a single destination and lasts between 1 and 14 days for 1 to 12 travellers.',
   ]);
   h3('1.9.2 Constraints');
   bullets([
     'The project is a minor project of one semester developed by three members; features are limited to the scope stated in Section 1.5.',
-    'Only free and open-source tools are used; the Google APIs are optional because they need a billing-enabled key.',
+    'Only free and open-source tools are used. The OpenStreetMap services (Overpass and the public OSRM server) need no key but are rate-limited, so place results are cached for one hour; the Google APIs are optional because they need a billing-enabled key.',
     'The itinerary is produced by a greedy heuristic. It is deterministic and fast but does not guarantee the mathematically shortest route.',
     'The catalogue is limited to the 12 seeded destinations with 8 to 10 activities each.',
     'Authentication uses a bearer token kept in the browser’s local storage with a validity of 7 days; there is no password-reset or e-mail verification flow.',
@@ -230,7 +263,7 @@ module.exports = (team) => {
   h3('2.1.5 System and provider functions');
   table('Table 2.5: Functional Requirements — System Functions', FR_HEAD, FR_W, [
     ['FR-20', 'Report service health', '`GET /health`', 'Returns `{ status: "ok", db: "connected", provider }` where provider is `local` or `google`.'],
-    ['FR-21', 'Select provider and fall back', 'Environment variable `GOOGLE_MAPS_API_KEY`', 'Empty key: local providers (haversine distance, activities collection). Key present: Google providers; every call has a 4-second timeout and any failure falls back to the local provider with a logged warning.'],
+    ['FR-21', 'Select provider and fall back', 'Environment variables `MAPS_PROVIDER` and `GOOGLE_MAPS_API_KEY`', '`local`: haversine distance and the activities collection. `osm`: OSRM road distances and Overpass place search. `google`: Distance Matrix and Places, needs the key. Every external route call has a 4-second timeout and any failure falls back to the local provider with a logged warning.'],
     ['FR-22', 'Return uniform errors', 'Any failing request', 'Errors are mapped centrally to the codes `VALIDATION_ERROR` 400, `UNAUTHORIZED` 401, `FORBIDDEN` 403, `NOT_FOUND` 404, `CONFLICT` 409, `RATE_LIMITED` 429 and `INTERNAL_ERROR` 500; stack traces are never sent to the client.'],
     ['FR-23', 'Seed catalogue data', 'Maintainer runs `npm run seed`', 'Loads the 12 destinations and their activities; the script is idempotent, so running it again does not create duplicates.'],
     ['FR-24', 'Show loading, empty and error states', 'Every data view of the client', 'A skeleton is shown while loading, an explanatory message when there is no data, and an error message with a Retry action when a request fails.'],
@@ -241,7 +274,7 @@ module.exports = (team) => {
     ['Performance', 'A plan preview with the local provider involves one database read and in-memory computation over at most about ten activities and should be returned well within two seconds on the demonstration machine. External provider calls are limited by a 4-second timeout. List responses are paginated (default 12, maximum 50 items) and request bodies are limited to 100 kB.'],
     ['Security', 'Passwords are stored only as bcrypt hashes (cost factor 10) and the hash is excluded from every query result and JSON output. Sessions use signed JSON Web Tokens that expire after 7 days. `helmet` sets secure HTTP headers and CORS accepts only the configured client origin. Authentication routes are rate-limited to 20 requests per 15 minutes per IP address. Every request body, query and path parameter is validated with Zod. Trips are isolated per owner, and secrets are read from an environment file that is not committed.'],
     ['Usability', 'Responsive layout from 360 px; forms are keyboard accessible with visible focus and labelled inputs; the `prefers-reduced-motion` setting is respected; amounts are formatted in the Indian numbering system (`en-IN`, INR, no decimals); every view has explicit loading, empty and error states.'],
-    ['Reliability', 'The application works without any external service. When Google providers are enabled, a timeout or upstream error causes an automatic fallback to the local provider. Itinerary generation is deterministic (ties are broken by activity name). Fonts are self-hosted so that the demonstration works offline.'],
+    ['Reliability', 'The application works without any external service. When the OpenStreetMap or Google providers are enabled, a timeout or upstream error causes an automatic fallback to the local provider. Itinerary generation is deterministic (ties are broken by activity name). Fonts are self-hosted so that the demonstration works offline.'],
     ['Maintainability', 'Layered server structure (routes, controllers, services, models, providers) with business logic kept out of controllers; the budget estimator is a pure function; configuration is read and validated once; ESLint is used in both workspaces; unit, API and provider tests run with Vitest, Supertest and an in-memory MongoDB; the design document is the single source of truth.'],
     ['Portability', 'Runs on Windows, macOS and Linux with Node.js 20 or later; MongoDB is provided as a Docker container; the client runs in any current browser; all environment-specific values are set through environment variables.'],
   ]);
@@ -261,13 +294,13 @@ module.exports = (team) => {
   p('The design is documented with UML 2 diagrams. The use case diagram gives the functional view, activity diagrams describe the main work flows, sequence (interaction) diagrams show how the objects of the three tiers collaborate, and the class diagram gives the static structure. The data dictionary at the end of the chapter defines every stored field.');
 
   h2('3.1 Use Case Diagram');
-  p('Figure 3.1 shows the use cases of Smart Trip Planner inside the system boundary. The primary actors are the Guest and the Registered Traveller. The Registered Traveller is a specialisation of the Guest and therefore inherits all guest use cases. The two Google services are secondary actors: they do not start any use case but take part in one when the Google providers are enabled.');
+  p('Figure 3.1 shows the use cases of Smart Trip Planner inside the system boundary. The primary actors are the Guest and the Registered Traveller. The Registered Traveller is a specialisation of the Guest and therefore inherits all guest use cases. The Places API and the Route API (OpenStreetMap/OSRM or Google) are secondary actors: they do not start any use case but take part in one when a remote provider is enabled.');
   p('The relationships between use cases in the diagram are read as follows. **Plan trip** always includes **Generate itinerary** and **Estimate budget**; the include arrows point from the base use case to the included ones. **Save trip** extends **Plan trip** at the point where the plan preview is shown, under the condition that the traveller is logged in; the extend arrow points from the extending use case to the base use case. If the traveller is not logged in, the client redirects to Login and restores the pending plan afterwards. **Search / filter destinations** extends **Browse destinations**, because the list is also usable without any filter.');
   table('Table 3.1: Actors', ['Actor', 'Type', 'Description'], [24, 16, 60], [
     ['Guest (Visitor)', 'Primary', 'A person using the application without being logged in. Can browse, search, view details, discover places, plan a trip, register and log in.'],
     ['Registered Traveller', 'Primary', 'A logged-in user (role `traveler`). Inherits the guest use cases and can additionally save a trip and manage saved trips.'],
-    ['Google Places API', 'Secondary (external system)', 'Supplies tourist attractions for “Discover nearby places” when an API key is configured; otherwise the local activities are used.'],
-    ['Google Distance Matrix API', 'Secondary (external system)', 'Supplies road distance and travel time between two stops for “Generate itinerary” when an API key is configured; otherwise the local haversine estimate is used.'],
+    ['Places API (OpenStreetMap Overpass or Google Places)', 'Secondary (external system)', 'Supplies tourist attractions for “Discover nearby places” when a remote provider is configured; otherwise the local activities are used.'],
+    ['Route API (OSRM or Google Distance Matrix)', 'Secondary (external system)', 'Supplies road distance and travel time between stops for “Generate itinerary” when a remote provider is configured; otherwise the local haversine estimate is used.'],
   ]);
 
   figure('use-case.png', 'Figure 3.1: Use Case Diagram', { maxH: 7.8 });
@@ -277,7 +310,7 @@ module.exports = (team) => {
   ucTable('Table 3.2: Use Case Description — Plan Trip', [
     ['Use case ID', 'UC-05'],
     ['Name', 'Plan trip (includes Generate itinerary and Estimate budget)'],
-    ['Actors', 'Guest or Registered Traveller (primary); Google Distance Matrix API (secondary, optional)'],
+    ['Actors', 'Guest or Registered Traveller (primary); Route API (secondary, optional)'],
     ['Preconditions', 'Destinations and activities have been seeded. The actor has opened the Plan Trip page, optionally with a destination pre-selected.'],
     ['Main flow', [
       '1. The actor selects a destination and enters start date, end date, number of travellers, budget tier, interests and pace.',
@@ -292,7 +325,7 @@ module.exports = (team) => {
       '2a. A field is missing or invalid: the client shows the error beside the field and nothing is sent.',
       '3a. The end date is before the start date, the trip is longer than 14 days or the start date is in the past: the server answers 400 `VALIDATION_ERROR` and the client shows the messages.',
       '3b. The destination does not exist: 404 `NOT_FOUND`.',
-      '4a. The Google provider times out or fails: distances are taken from the local provider and the response is labelled `provider = local`.',
+      '4a. The remote provider times out or fails: distances are taken from the local provider and the response is labelled `provider = local`.',
       '4b. There are fewer activities than days: remaining days are returned as free days.',
     ]],
     ['Postconditions', 'A plan preview is displayed. Nothing is stored on the server. The actor may continue with Save trip (UC-10).'],
@@ -340,19 +373,19 @@ module.exports = (team) => {
   ucTable('Table 3.5: Use Case Description — Discover Nearby Places', [
     ['Use case ID', 'UC-04'],
     ['Name', 'Discover nearby places'],
-    ['Actors', 'Guest or Registered Traveller (primary); Google Places API (secondary, optional)'],
+    ['Actors', 'Guest or Registered Traveller (primary); Places API (secondary, optional)'],
     ['Preconditions', 'The actor is viewing the details page of a destination.'],
     ['Main flow', [
       '1. The actor opens the “Discover nearby” section and optionally chooses a type of place.',
       '2. The client sends `GET /destinations/:slug/discover?type=<type>`.',
       '3. The server asks the configured PlacesProvider for places of that destination.',
-      '4. With the Google provider, a text search for tourist attractions in “<name>, <state>” is sent to the Places API and the results are mapped to the common place format.',
+      '4. With the OpenStreetMap provider, an Overpass query for named attractions within 12 km of the destination is sent; with the Google provider, a text search for tourist attractions in “<name>, <state>” is sent to the Places API. The results are mapped to the common place format.',
       '5. The server returns the list and `meta.provider`.',
       '6. The client lists the places with name, type, rating and address and labels the source.',
     ]],
     ['Alternate flows', [
       '3a. No API key is configured: the local provider returns the matching records of the `activities` collection.',
-      '4a. The Google call fails or exceeds 4 seconds: the local provider is used and a warning is logged.',
+      '4a. The external call fails or times out: the local provider is used and a warning is logged.',
       '5a. No place matches the type: an empty list is returned and the client shows the empty state.',
     ]],
     ['Postconditions', 'The actor sees places of the destination; no data is changed.'],
@@ -378,12 +411,12 @@ module.exports = (team) => {
     '**Schedule.** Start each day at 09:00. The start time of a stop is the end time of the previous stop plus the travel minutes, rounded up to 5 minutes; a 60-minute lunch gap is inserted before the first item that would start after 13:00.',
     '**Free days.** A day for which no activity is left receives an empty item list and the note “Free day — explore at your own pace”.',
   ]);
-  p('The RouteProvider returns the distance in kilometres and the travel time in minutes for one leg. The local implementation uses the haversine distance multiplied by 1.3 and an average speed of 25 km/h; the Google implementation calls the Distance Matrix API and falls back to the local one on any failure. Restricting step 3(b) to the top-scored half keeps good activities from being displaced by places that are merely close.');
+  p('The RouteProvider returns the distance in kilometres and the travel time in minutes for every pair of stops in one matrix, so an external service is called once per plan and not once per leg. The local implementation uses the haversine distance multiplied by 1.3 and an average speed of 25 km/h; the OpenStreetMap implementation calls the OSRM table service and the Google implementation calls the Distance Matrix API, and both fall back to the local one on any failure. Restricting step 3(b) to the top-scored half keeps good activities from being displaced by places that are merely close.');
 
   h2('3.3 Interaction Diagram');
   p('Sequence diagrams show the messages exchanged between the traveller, the client objects (page, authentication context, API client), the server objects (middleware, controllers, services, providers) and the database. Solid arrows are calls, dashed arrows are returns.');
   h3('3.3.1 Generate plan preview');
-  p('In Figure 3.5 the `loop` fragment corresponds to the distance queries made while the days are being built. Inside it, the `alt` fragment shows the provider behaviour: when a Google key is configured and the Distance Matrix API answers within 4 seconds its values are used; in every other case the local haversine estimate is returned and the response is labelled with `provider = local`.');
+  p('In Figure 3.5 the `loop` fragment corresponds to the distance queries made while the days are being built. Inside it, the `alt` fragment shows the provider behaviour: when a remote provider (OSRM or Google Distance Matrix) is configured and answers within 4 seconds its values are used; in every other case the local haversine estimate is returned and the response is labelled with `provider = local`.');
   figure('sequence-plan-preview.png', 'Figure 3.5: Sequence Diagram — Generate Plan Preview', { maxH: 5.6 });
   h3('3.3.2 Save trip');
   p('In Figure 3.6 the `opt` fragment is executed only when the traveller is not logged in. The request to `/trips` carries the token in the `Authorization` header; the authentication middleware verifies it before the controller is reached. The trip service then loads the destination, regenerates the itinerary and the budget on the server and inserts the trip.');
@@ -407,16 +440,16 @@ module.exports = (team) => {
     ['AuthService', 'Service', 'Registers users, verifies credentials, signs tokens and returns the current user.'],
     ['DestinationService', 'Service', 'Lists, searches and filters destinations, returns details with activities and delegates discovery to the PlacesProvider.'],
     ['ItineraryService', 'Service', 'Implements the scoring, day-building and scheduling algorithm of Section 3.2.3 using a RouteProvider.'],
-    ['BudgetService', 'Service', 'Pure function `estimateBudget` implementing the formula of Section 3.5.9.'],
+    ['BudgetService', 'Service', 'Pure function `estimateBudget` implementing the formula of Section 3.5.10.'],
     ['TripService', 'Service', 'Builds a plan from a PlanInput (used for preview and save) and performs owner-restricted create, list, read, update and delete of trips.'],
-    ['RouteProvider', 'Interface', '`getLeg(from, to)` returns kilometres and minutes between two points. Realised by LocalRouteProvider (haversine × 1.3, 25 km/h) and GoogleRouteProvider (Distance Matrix API, 4 s timeout, fallback to local).'],
-    ['PlacesProvider', 'Interface', '`discover(destination, type)` returns places of a destination. Realised by LocalPlacesProvider (activities collection) and GooglePlacesProvider (Places API text search, 4 s timeout, fallback to local).'],
+    ['RouteProvider', 'Interface', '`getMatrix(points)` returns kilometres and minutes for every pair of points; `getLeg(from, to)` is a wrapper for one pair. Realised by LocalRouteProvider (haversine × 1.3, 25 km/h), OsmRouteProvider (OSRM table service) and GoogleRouteProvider (Distance Matrix API); the remote ones have a 4 s timeout and fall back to local.'],
+    ['PlacesProvider', 'Interface', '`discover(destination, type)` returns places of a destination. Realised by LocalPlacesProvider (activities collection), OsmPlacesProvider (Overpass query, one-hour cache) and GooglePlacesProvider (Places API text search); the remote ones fall back to local.'],
   ]);
   figure('class-diagram.png', 'Figure 3.8: Class Diagram — Domain Model', { maxH: 7.2 });
   figure('class-diagram-services.png', 'Figure 3.9: Class Diagram — Services and Provider Interfaces', { landscape: true });
 
   h2('3.5 Data Dictionary');
-  p('The database `smart_trip_planner` contains four collections: `users`, `destinations`, `activities` and `trips`. Every document has the primary key `_id` of type ObjectId generated by MongoDB, and the fields `createdAt` and `updatedAt` maintained by Mongoose. References between collections are stored as ObjectId values and are listed as foreign keys (FK). Money is stored in Indian Rupees as whole numbers. In the column Size / Range, “variable” means that the design does not impose a length limit. In JSON responses `_id` is returned as `id`, and the internal version key is removed.');
+  p('The database `smart_trip_planner` contains four collections: `users`, `destinations`, `activities` and `trips`. Every document has the primary key `_id` of type ObjectId generated by MongoDB, and the fields `createdAt` and `updatedAt` maintained by Mongoose. References between collections are stored as ObjectId values and are listed as foreign keys (FK). Money is stored in Indian Rupees as whole numbers. The tables follow the prescribed format: the column Len gives the maximum length in characters where the design fixes one and “-” otherwise, and ranges of numeric fields are listed with the constraints. In JSON responses `_id` is returned as `id`, and the internal version key is removed.');
 
   h3('3.5.1 Collection: users');
   ddTable('Table 3.7: Data Dictionary — users', [
@@ -533,8 +566,15 @@ module.exports = (team) => {
     ['perPerson', 'Number', 'Integer ≥ 0 (INR)', 'Derived: round(total / travelers)', 'Share of one traveller'],
   ]);
 
-  h3('3.5.8 Relationships and indexes');
-  table('Table 3.15: Relationships and Indexes', ['Collection', 'Key / index', 'Purpose'], [20, 38, 42], [
+  h3('3.5.8 Sample records');
+  p('Tables 3.15 to 3.18 list five records of each collection as stored in the development database after `npm run seed`. Long fields (descriptions, the embedded itinerary and the full password hash) are left out so that the records fit the page; every sample account uses the demonstration password and each one is hashed with its own salt.');
+  recordsTable('Table 3.15: Sample Records — users', ['_id', 'name', 'email', 'passwordHash', 'role'], [25, 17, 27, 18, 13], records.users);
+  recordsTable('Table 3.16: Sample Records — destinations', ['name', 'slug', 'state', 'category', 'bestSeason', 'ideal Days', 'standard stay (INR)', 'rating'], [12, 12, 15, 13, 19, 9, 12, 8], records.destinations);
+  recordsTable('Table 3.17: Sample Records — activities (destination: Manali)', ['name', 'type', 'location (lat, lng)', 'duration Hours', 'entry Fee', 'rating', 'best Time', 'source'], [22, 12, 20, 10, 8, 8, 10, 10], records.activities);
+  recordsTable('Table 3.18: Sample Records — trips', ['title', 'user', 'start Date', 'end Date', 'days', 'travelers', 'budget Tier', 'pace', 'status', 'budget .total'], [15, 13, 11, 11, 6, 10, 10, 10, 10, 9], records.trips);
+
+  h3('3.5.9 Relationships and indexes');
+  table('Table 3.19: Relationships and Indexes', ['Collection', 'Key / index', 'Purpose'], [20, 38, 42], [
     ['users', 'Unique index on `email`', 'One account per e-mail address; duplicate registration is reported as 409.'],
     ['destinations', 'Unique index on `slug`', 'Stable, human-readable URL of a destination.'],
     ['activities', 'Index on `destination`; unique compound index on `{ destination, name }`', 'Fast loading of the activities of a destination; makes the seed script idempotent.'],
@@ -542,7 +582,7 @@ module.exports = (team) => {
     ['trips.itinerary.items', 'FK `activity` → activities (reference only)', 'Traceability of a snapshot to its source activity.'],
   ]);
 
-  h3('3.5.9 Budget computation');
+  h3('3.5.10 Budget computation');
   p('The budget is computed by the pure function `estimateBudget` of `budgetService`. It receives the daily cost table of the destination, the tier, the number of days, the number of travellers and the activity fees per person, and has no side effects, which makes it easy to unit-test. The activity fees per person are the sum of the entry fees of all scheduled itinerary items; for the quick estimate (FR-12) they are 0.');
   code([
     'nights     = max(days - 1, 1)',
@@ -555,7 +595,7 @@ module.exports = (team) => {
     'perPerson  = round(total / travelers)',
   ]);
   p('**Worked example.** The demonstration plan is a trip to Manali of 4 days for 2 travellers in the standard tier. The seeded standard-tier daily cost of Manali is Rs. 3,000 per room per night for stay, Rs. 900 per person per day for food and Rs. 900 per person per day for transport. With the interests Adventure and Nature at a balanced pace, the generated itinerary schedules ten activities whose entry fees add up to Rs. 1,300 per person (Rohtang Pass 550, Solang Valley 700, Naggar Castle 30 and Van Vihar National Park 20; the remaining stops are free). With three travellers instead of two, the number of rooms would become ceil(3 / 2) = 2, which doubles the stay component.');
-  table('Table 3.16: Worked Budget Example (Manali, 4 days, 2 travellers, standard tier)', ['Quantity', 'Computation', 'Result'], [24, 50, 26], [
+  table('Table 3.20: Worked Budget Example (Manali, 4 days, 2 travellers, standard tier)', ['Quantity', 'Computation', 'Result'], [24, 50, 26], [
     ['nights', 'max(4 − 1, 1)', '3'],
     ['rooms', 'ceil(2 / 2)', '1'],
     ['stay', '3,000 × 1 room × 3 nights', 'Rs. 9,000'],

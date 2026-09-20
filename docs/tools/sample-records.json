@@ -1,0 +1,205 @@
+{
+  "users": [
+    [
+      "6aaf8ac5f88036b1cbc33123",
+      "Demo Traveller",
+      "demo@smarttrip.in",
+      "$2b$10$Cr5YvN…",
+      "traveler"
+    ],
+    [
+      "6aaf8fd1f88036b1cbc33766",
+      "Aarav Patel",
+      "aarav.patel@smarttrip.in",
+      "$2b$10$VKklSD…",
+      "traveler"
+    ],
+    [
+      "6aaf8fd1f88036b1cbc33768",
+      "Diya Shah",
+      "diya.shah@smarttrip.in",
+      "$2b$10$6jyijv…",
+      "traveler"
+    ],
+    [
+      "6aaf8fd1f88036b1cbc3376a",
+      "Kabir Mehta",
+      "kabir.mehta@smarttrip.in",
+      "$2b$10$YVs2.i…",
+      "traveler"
+    ],
+    [
+      "6aaf8fd1f88036b1cbc3376c",
+      "Ananya Iyer",
+      "ananya.iyer@smarttrip.in",
+      "$2b$10$bQRXGP…",
+      "traveler"
+    ]
+  ],
+  "destinations": [
+    [
+      "Alleppey",
+      "alleppey",
+      "Kerala",
+      "nature",
+      "October – February",
+      "2–3",
+      3500,
+      4.4
+    ],
+    [
+      "Darjeeling",
+      "darjeeling",
+      "West Bengal",
+      "hill-station",
+      "March – May, October – December",
+      "2–4",
+      3000,
+      4.4
+    ],
+    [
+      "Goa",
+      "goa",
+      "Goa",
+      "beach",
+      "November – February",
+      "3–6",
+      4000,
+      4.5
+    ],
+    [
+      "Jaipur",
+      "jaipur",
+      "Rajasthan",
+      "heritage",
+      "October – March",
+      "2–4",
+      3000,
+      4.5
+    ],
+    [
+      "Jaisalmer",
+      "jaisalmer",
+      "Rajasthan",
+      "desert",
+      "November – February",
+      "2–3",
+      3000,
+      4.4
+    ]
+  ],
+  "activities": [
+    [
+      "Rohtang Pass",
+      "adventure",
+      "32.3716, 77.2466",
+      5,
+      550,
+      4.7,
+      "morning",
+      "seed"
+    ],
+    [
+      "Hadimba Devi Temple",
+      "spiritual",
+      "32.2483, 77.1806",
+      1,
+      0,
+      4.6,
+      "morning",
+      "seed"
+    ],
+    [
+      "Jogini Waterfall Trek",
+      "nature",
+      "32.2752, 77.188",
+      3,
+      0,
+      4.6,
+      "morning",
+      "seed"
+    ],
+    [
+      "Sissu via Atal Tunnel",
+      "nature",
+      "32.4689, 77.1323",
+      4,
+      0,
+      4.6,
+      "any",
+      "seed"
+    ],
+    [
+      "Solang Valley",
+      "adventure",
+      "32.3166, 77.157",
+      4,
+      700,
+      4.5,
+      "morning",
+      "seed"
+    ]
+  ],
+  "trips": [
+    [
+      "3 days in Rishikesh",
+      "Diya Shah",
+      "2026-10-04",
+      "2026-10-06",
+      3,
+      2,
+      "economy",
+      "packed",
+      "planned",
+      16160
+    ],
+    [
+      "3 days in Jaipur",
+      "Demo Traveller",
+      "2026-10-11",
+      "2026-10-13",
+      3,
+      2,
+      "standard",
+      "balanced",
+      "planned",
+      21300
+    ],
+    [
+      "5 days in Goa",
+      "Aarav Patel",
+      "2026-10-20",
+      "2026-10-24",
+      5,
+      3,
+      "standard",
+      "relaxed",
+      "planned",
+      72500
+    ],
+    [
+      "2 days in Udaipur",
+      "Kabir Mehta",
+      "2026-11-04",
+      "2026-11-05",
+      2,
+      2,
+      "luxury",
+      "balanced",
+      "planned",
+      35400
+    ],
+    [
+      "4 days in Kutch",
+      "Demo Traveller",
+      "2026-11-19",
+      "2026-11-22",
+      4,
+      4,
+      "economy",
+      "relaxed",
+      "planned",
+      24400
+    ]
+  ]
+}

@@ -14,15 +14,15 @@ node "Application tier\nNode.js + Express REST API (/api/v1, port 4100)" as S {
   component "Middleware\nhelmet, cors, rate limit,\nJWT auth, Zod validate,\nerrorHandler" as MW
   component "Routes + Controllers\nauth, destinations, planner,\nbudget, trips, health" as Ctrl
   component "Services\nauth, destination, itinerary,\nbudget, trip" as Svc
-  component "Provider adapters\nRouteProvider / PlacesProvider\nGoogle (4 s timeout) with\nfallback to Local" as Prov
+  component "Provider adapters\nRouteProvider / PlacesProvider\nOSM or Google (4 s timeout)\nwith fallback to Local" as Prov
   component "Mongoose models\nUser, Destination,\nActivity, Trip" as Mod
 }
 
 database "Data tier - MongoDB 7\ndatabase smart_trip_planner\n\nusers, destinations,\nactivities, trips" as DB
 
-cloud "Google Maps Platform\n(optional)" as G {
-  component "Places API (New)" as GPl
-  component "Distance Matrix API" as GDM
+cloud "External map services\n(optional)" as G {
+  component "Places: Overpass (OSM)\nor Google Places API" as GPl
+  component "Routes: OSRM\nor Google Distance Matrix" as GDM
 }
 
 Pages -right-> Ctx : uses
