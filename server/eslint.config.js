@@ -1,0 +1,29 @@
+import js from '@eslint/js';
+import globals from 'globals';
+
+export default [
+  { ignores: ['node_modules/', 'coverage/'] },
+  js.configs.recommended,
+  {
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: globals.node,
+    },
+    rules: {
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'prefer-const': 'error',
+      'no-var': 'error',
+      eqeqeq: ['error', 'always'],
+      curly: ['error', 'multi-line'],
+      'object-shorthand': 'error',
+      'no-shadow': 'error',
+      'no-return-await': 'off',
+    },
+  },
+  {
+    files: ['src/server.js', 'src/seed/seed.js'],
+    rules: { 'no-console': 'off' },
+  },
+];

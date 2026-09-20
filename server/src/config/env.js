@@ -1,0 +1,40 @@
+import dotenv from 'dotenv';
+import { z } from 'zod';
+
+if (process.env.NODE_ENV !== 'test') {
+  dotenv.config({ quiet: true });
+}
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  PORT: z.coerce.number().int().min(1).max(65535).default(4100),
+  MONGODB_URI: z.string().regex(/^mongodb(\+srv)?:\/\//, 'must be a mongodb:// connection string'),
+  JWT_SECRET: z.string().min(32, 'must be at least 32 characters'),
+  JWT_EXPIRES_IN: z.string().min(1).default('7d'),
+  CLIENT_ORIGIN: z.url().default('http://localhost:5173'),
+  GOOGLE_MAPS_API_KEY: z.string().trim().default(''),
+});
+
+const parsed = envSchema.safeParse(process.env);
+
+if (!parsed.success) {
+  const problems = parsed.error.issues
+    .map((issue) => `  ${issue.path.join('.')}: ${issue.message}`)
+    .join('\n');
+  console.error(`Invalid environment configuration:\n${problems}\nSee server/.env.example.`);
+  process.exit(1);
+}
+
+const env = parsed.data;
+
+export const config = Object.freeze({
+  nodeEnv: env.NODE_ENV,
+  isTest: env.NODE_ENV === 'test',
+  isDev: env.NODE_ENV === 'development',
+  port: env.PORT,
+  mongodbUri: env.MONGODB_URI,
+  jwtSecret: env.JWT_SECRET,
+  jwtExpiresIn: env.JWT_EXPIRES_IN,
+  clientOrigin: env.CLIENT_ORIGIN,
+  googleMapsApiKey: env.GOOGLE_MAPS_API_KEY,
+});
