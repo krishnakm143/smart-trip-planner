@@ -1,0 +1,12 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: stp-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - stp-mongo-data:/data/db
+
+volumes:
+  stp-mongo-data:
