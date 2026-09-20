@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { LogOut, Menu, X } from 'lucide-react'
+import Logo from '../Logo/Logo'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../ui/Button'
 import styles from './Header.module.css'
@@ -23,12 +24,7 @@ export default function Header() {
     <header className={styles.header}>
       <div className={`container ${styles.bar}`}>
         <Link to="/" className={styles.brand} onClick={closeMenu}>
-          <svg viewBox="0 0 32 32" aria-hidden="true" className={styles.mark}>
-            <path d="M6 24c5-1 6-11 10-11s4 7 10-5" />
-            <circle cx="6" cy="24" r="3" />
-            <circle cx="26" cy="8" r="3" />
-          </svg>
-          Smart Trip Planner
+          <Logo />
         </Link>
 
         <button

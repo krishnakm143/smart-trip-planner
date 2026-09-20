@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { withBase } from '../../utils/basePath'
+import Logo from '../Logo/Logo'
 import styles from './Footer.module.css'
 
 export default function Footer() {
@@ -7,7 +8,9 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className={`container ${styles.inner}`}>
         <div>
-          <p className={styles.name}>Smart Trip Planner</p>
+          <p className={styles.name}>
+            <Logo onDark />
+          </p>
           <p className={styles.note}>
             Minor project, MCA Semester III, SVIT Vasad. Built by Udit Mishra, Hardik Vaghela and Vraj Panchal.
           </p>
