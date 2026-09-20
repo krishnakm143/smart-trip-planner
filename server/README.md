@@ -42,7 +42,8 @@ message if a value is missing or invalid.
 | `JWT_SECRET` | — | At least 32 characters |
 | `JWT_EXPIRES_IN` | `7d` | |
 | `CLIENT_ORIGIN` | `http://localhost:5173` | Allowed CORS origin |
-| `GOOGLE_MAPS_API_KEY` | empty | Empty → local providers. Set → Google Distance Matrix and Places (New), falling back to local on any failure |
+| `MAPS_PROVIDER` | `local` (or `google` when a key is set) | `local`, `osm` (Overpass + OSRM, free, no key) or `google`. Remote providers fall back to local on any failure |
+| `GOOGLE_MAPS_API_KEY` | empty | Needed only for `MAPS_PROVIDER=google` (Distance Matrix and Places API (New)) |
 
 ## Endpoints
 

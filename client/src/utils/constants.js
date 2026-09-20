@@ -38,6 +38,7 @@ export const TRIP_STATUSES = [
 
 export const PROVIDER_LABELS = {
   local: 'Curated local data',
+  osm: 'OpenStreetMap',
   google: 'Google Places',
 }
 

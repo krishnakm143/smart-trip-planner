@@ -5,7 +5,7 @@ import { buildPlan } from './plannerService.js';
 const DESTINATION_SUMMARY_FIELDS = 'name slug state heroImage';
 const DESTINATION_DETAIL_FIELDS = `${DESTINATION_SUMMARY_FIELDS} location`;
 
-const defaultTitle = (days, destinationName) =>
+export const defaultTitle = (days, destinationName) =>
   `${days} ${days === 1 ? 'day' : 'days'} in ${destinationName}`;
 
 function toTripSummary(trip) {

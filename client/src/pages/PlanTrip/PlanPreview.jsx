@@ -9,6 +9,7 @@ import styles from './PlanPreview.module.css'
 
 const ROUTE_NOTES = {
   local: 'Distances are straight-line estimates with a road factor, at 25 km/h.',
+  osm: 'Driving distances and times come from OSRM on OpenStreetMap roads.',
   google: 'Driving times come from Google Distance Matrix.',
 }
 

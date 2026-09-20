@@ -1,4 +1,4 @@
-import { fetchJson } from './fetchJson.js';
+import { fetchJson } from '../fetchJson.js';
 import { SEARCH_PHRASE_BY_TYPE, mapGoogleTypes } from './placeTypes.js';
 
 const TEXT_SEARCH_URL = 'https://places.googleapis.com/v1/places:searchText';

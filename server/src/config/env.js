@@ -12,6 +12,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32, 'must be at least 32 characters'),
   JWT_EXPIRES_IN: z.string().min(1).default('7d'),
   CLIENT_ORIGIN: z.url().default('http://localhost:5173'),
+  MAPS_PROVIDER: z.enum(['local', 'osm', 'google']).optional(),
   GOOGLE_MAPS_API_KEY: z.string().trim().default(''),
 });
 
@@ -27,6 +28,13 @@ if (!parsed.success) {
 
 const env = parsed.data;
 
+if (env.MAPS_PROVIDER === 'google' && !env.GOOGLE_MAPS_API_KEY) {
+  console.error(
+    'Invalid environment configuration:\n  MAPS_PROVIDER=google needs GOOGLE_MAPS_API_KEY\nSee server/.env.example.',
+  );
+  process.exit(1);
+}
+
 export const config = Object.freeze({
   nodeEnv: env.NODE_ENV,
   isTest: env.NODE_ENV === 'test',
@@ -36,5 +44,6 @@ export const config = Object.freeze({
   jwtSecret: env.JWT_SECRET,
   jwtExpiresIn: env.JWT_EXPIRES_IN,
   clientOrigin: env.CLIENT_ORIGIN,
+  mapsProvider: env.MAPS_PROVIDER ?? (env.GOOGLE_MAPS_API_KEY ? 'google' : 'local'),
   googleMapsApiKey: env.GOOGLE_MAPS_API_KEY,
 });

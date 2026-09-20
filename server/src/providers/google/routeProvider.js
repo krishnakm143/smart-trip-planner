@@ -1,5 +1,5 @@
 import { roundTo } from '../../utils/geo.js';
-import { fetchJson } from './fetchJson.js';
+import { fetchJson } from '../fetchJson.js';
 
 const DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json';
 const MAX_ELEMENTS_PER_REQUEST = 100;
