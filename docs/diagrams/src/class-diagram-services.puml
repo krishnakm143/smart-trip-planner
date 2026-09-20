@@ -3,13 +3,21 @@
 hide circle
 hide empty members
 skinparam nodesep 30
-skinparam ranksep 45
+skinparam ranksep 50
 
 class AuthService <<service>> {
   +register(name, email, password) : {user, token}
   +login(email, password) : {user, token}
   +getCurrentUser(userId) : User
   -signToken(user) : String
+}
+class TripService <<service>> {
+  +buildPlan(planInput) : {destination, days, itinerary, budget}
+  +createTrip(userId, planInput, title) : Trip
+  +listTrips(userId, status) : TripSummary[]
+  +getTrip(userId, tripId) : Trip
+  +updateTrip(userId, tripId, patch) : Trip
+  +deleteTrip(userId, tripId) : ObjectId
 }
 class DestinationService <<service>> {
   +list(search, category, page, limit) : {items, total, page, limit}
@@ -27,58 +35,48 @@ class BudgetService <<service>> {
   +estimateBudget(dailyCost, tier, days,
     travelers, activityFeesPerPerson) : Budget
 }
-class TripService <<service>> {
-  +buildPlan(planInput) : {destination, days, itinerary, budget}
-  +createTrip(userId, planInput, title) : Trip
-  +listTrips(userId, status) : TripSummary[]
-  +getTrip(userId, tripId) : Trip
-  +updateTrip(userId, tripId, patch) : Trip
-  +deleteTrip(userId, tripId) : ObjectId
-}
 
-interface RouteProvider {
+interface RouteProvider <<interface>> {
   +getLeg(from : GeoPoint, to : GeoPoint) : {km, minutes}
 }
-interface PlacesProvider {
+interface PlacesProvider <<interface>> {
   +discover(destination, type) : DiscoveredPlace[]
 }
 class LocalRouteProvider {
-  haversine x 1.3, 25 km/h
+  -ROAD_FACTOR : Number = 1.3
+  -AVG_SPEED_KMH : Number = 25
+  +getLeg(from, to) : {km, minutes}
 }
 class GoogleRouteProvider {
-  Distance Matrix API, 4 s timeout
-  -fallback : LocalRouteProvider
+  -apiKey : String
+  -timeoutMs : Number = 4000
+  +getLeg(from, to) : {km, minutes}
 }
 class LocalPlacesProvider {
-  reads activities collection
+  +discover(destination, type) : DiscoveredPlace[]
 }
 class GooglePlacesProvider {
-  Places API (New) searchText, 4 s timeout
-  -fallback : LocalPlacesProvider
+  -apiKey : String
+  -timeoutMs : Number = 4000
+  +discover(destination, type) : DiscoveredPlace[]
 }
 
-class User <<model>>
-class Destination <<model>>
-class Activity <<model>>
-class Trip <<model>>
+TripService ..> ItineraryService : <<use>>
+TripService ..> BudgetService : <<use>>
+ItineraryService ..> RouteProvider : <<use>>
+DestinationService ..> PlacesProvider : <<use>>
+AuthService -[hidden]right- TripService
 
-LocalRouteProvider ..|> RouteProvider
-GoogleRouteProvider ..|> RouteProvider
-LocalPlacesProvider ..|> PlacesProvider
-GooglePlacesProvider ..|> PlacesProvider
-GoogleRouteProvider o--> LocalRouteProvider : falls back to
-GooglePlacesProvider o--> LocalPlacesProvider : falls back to
+RouteProvider <|.. LocalRouteProvider
+RouteProvider <|.. GoogleRouteProvider
+PlacesProvider <|.. LocalPlacesProvider
+PlacesProvider <|.. GooglePlacesProvider
+GoogleRouteProvider -right-> LocalRouteProvider : fallback
+GooglePlacesProvider -right-> LocalPlacesProvider : fallback
 
-TripService ..> ItineraryService : uses
-TripService ..> BudgetService : uses
-ItineraryService ..> RouteProvider : uses
-DestinationService ..> PlacesProvider : uses
-
-AuthService ..> User
-DestinationService ..> Destination
-DestinationService ..> Activity
-TripService ..> Trip
-TripService ..> Destination
-TripService ..> Activity
-LocalPlacesProvider ..> Activity
+note bottom of AuthService
+  Services operate on the Mongoose models
+  User, Destination, Activity and Trip
+  shown in the domain class diagram.
+end note
 @enduml

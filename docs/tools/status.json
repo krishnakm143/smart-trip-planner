@@ -1,0 +1,29 @@
+{
+  "_readme": "Implementation status shown on the 'Implementation Status' slide. status is 'done' or 'in-progress'. EDIT THIS to match the real state of server/ and client/ before presenting, then re-run: node build-presentation.js",
+  "groups": [
+    {
+      "name": "Backend — Express API",
+      "modules": [
+        { "name": "Data models + seed (12 destinations, activities)", "status": "done" },
+        { "name": "Auth API — register, login, me (JWT, bcrypt)", "status": "done" },
+        { "name": "Destinations API — list, filter, details", "status": "done" },
+        { "name": "Itinerary service — scoring, routing, scheduling", "status": "done" },
+        { "name": "Budget service — tier-based estimate", "status": "done" },
+        { "name": "Trips API — save, list, update, delete, ownership", "status": "done" },
+        { "name": "Google Places / Distance providers with fallback", "status": "in-progress" },
+        { "name": "Automated tests — unit + API", "status": "in-progress" }
+      ]
+    },
+    {
+      "name": "Frontend — React client",
+      "modules": [
+        { "name": "Home, Destinations, Destination details", "status": "done" },
+        { "name": "Plan Trip form + generated plan preview", "status": "done" },
+        { "name": "Login / Register, protected routes, plan restore", "status": "done" },
+        { "name": "My Trips + Trip Details (notes, status, delete)", "status": "done" },
+        { "name": "Discover nearby places panel", "status": "in-progress" },
+        { "name": "Responsive + accessibility polish", "status": "in-progress" }
+      ]
+    }
+  ]
+}

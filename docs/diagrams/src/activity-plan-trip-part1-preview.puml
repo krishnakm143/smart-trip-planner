@@ -1,5 +1,6 @@
-@startuml activity-plan-trip
+@startuml activity-plan-trip-part1-preview
 !include _style.iuml
+title Plan Trip - Part 1: Generate plan preview
 |Traveller|
 start
 :Choose destination and open Plan Trip
@@ -48,33 +49,7 @@ budget }, meta.provider;
 :Show plan preview
 (itinerary + budget breakdown);
 |Traveller|
-if (Save trip?) then (no)
-  stop
-else (yes)
-endif
-|React Client|
-if (Logged in?) then (no)
-  :Keep PlanInput in sessionStorage
-  (stp.pendingPlan);
-  |Traveller|
-  :Login or register;
-  |React Client|
-  :Return to /plan and restore preview;
-else (yes)
-endif
-:POST /trips (PlanInput + title)
-Authorization: Bearer JWT;
-|Express API|
-:Verify JWT; regenerate itinerary + budget
-(client numbers are never trusted);
-|MongoDB / Providers|
-:Insert trip document
-(status = planned);
-|Express API|
-:201 { trip };
-|React Client|
-:Navigate to Trip Details (/trips/:id);
-|Traveller|
-:Review saved trip;
+:Review preview
+(continue with Part 2: Save trip);
 stop
 @enduml

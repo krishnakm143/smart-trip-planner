@@ -2,54 +2,52 @@
 !include _style.iuml
 |Visitor|
 start
-if (Has an account?) then (no)
-  :Open /register, enter
-  name, email, password;
-  |React Client|
-  :POST /auth/register;
-  |Express API|
-  :Rate limit + Zod validation
-  (password >= 8 chars);
+:Open /register (name, email,
+password) or /login (email,
+password) and submit;
+|React Client|
+:POST /auth/register
+or POST /auth/login;
+|Express API|
+:Rate limit (20 req / 15 min / IP),
+Zod validation (password >= 8 chars);
+if (Request?) then (register)
   if (Email already used?) then (yes)
-    :409 CONFLICT;
-    |React Client|
-    :Show "email already registered";
+    :409 CONFLICT, client
+    shows "email already
+    registered";
     stop
   else (no)
   endif
-  |Express API|
-  :Hash password (bcrypt, cost 10);
+  :Hash password
+(bcrypt, cost 10);
   |MongoDB|
-  :Insert user (role = traveler);
-else (yes)
-  |Visitor|
-  :Open /login, enter
-  email and password;
-  |React Client|
-  :POST /auth/login;
-  |Express API|
-  :Rate limit + Zod validation;
+  :Insert user
+  (role = traveler);
+else (login)
   |MongoDB|
   :Find user by email
   (+passwordHash);
   |Express API|
-  if (Password matches hash?) then (no)
-    :401 UNAUTHORIZED;
-    |React Client|
-    :Show "invalid email or password";
+  if (User found and password\nmatches hash?) then (no)
+    :401 UNAUTHORIZED, client
+    shows "invalid email
+    or password";
     stop
   else (yes)
   endif
 endif
 |Express API|
-:Sign JWT (expires in 7 d);
-:Return { user, token };
+:Sign JWT (expires in 7 d),
+return { user, token };
 |React Client|
 :Store token in localStorage,
 set AuthContext user;
 :Redirect to state.from
-(or /trips);
+(default /trips);
 |Visitor|
-:Use protected pages;
+:Use protected pages
+(My Trips, Trip Details,
+Save trip);
 stop
 @enduml

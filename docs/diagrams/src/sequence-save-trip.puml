@@ -1,0 +1,34 @@
+@startuml sequence-save-trip
+!include _style.iuml
+hide footbox
+skinparam maxMessageSize 300
+actor Traveller as T
+participant "PlanTrip\nPage" as P
+participant "apiClient" as A
+participant "auth\nmiddleware" as AM
+participant "tripController /\ntripService" as TS
+participant "itinerary\nService" as IS
+participant "budget\nService" as BS
+database "MongoDB" as DB
+T -> P : click "Save trip"
+opt traveller not logged in
+  P -> P : sessionStorage\nstp.pendingPlan = planInput
+  P --> T : redirect to /login
+  T -> P : log in, return to /plan\n(preview restored)
+end
+P -> A : createTrip(planInput, title)
+A -> AM : POST /api/v1/trips\nAuthorization: Bearer <jwt>
+AM -> AM : verify JWT\n-> req.user
+AM -> TS : next()
+TS -> DB : find destination + activities
+DB --> TS : destination, activities[]
+TS -> IS : regenerate itinerary\n(server side)
+IS --> TS : ItineraryDay[]
+TS -> BS : estimateBudget(...)
+BS --> TS : budget
+TS -> DB : insert trip { user, destination,\nitinerary, budget, status: planned }
+DB --> TS : trip
+TS --> A : 201 { trip }
+A --> P : trip
+P --> T : navigate to /trips/:id\n(Trip Details)
+@enduml

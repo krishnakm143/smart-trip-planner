@@ -1,50 +1,40 @@
 @startuml architecture
 !include _style.iuml
 skinparam componentStyle rectangle
-skinparam nodesep 25
-skinparam ranksep 40
+skinparam nodesep 30
+skinparam ranksep 55
 
-node "Presentation tier - Web browser" as B {
-  package "React 18 SPA (Vite, React Router)" as SPA {
-    component "Pages\nHome, Destinations, Destination Details,\nPlan Trip, My Trips, Trip Details, Login, Register" as Pages
-    component "Shared components\nDestinationCard, ItineraryDay,\nBudgetBreakdown, state views" as Comp
-    component "AuthContext +\nProtectedRoute" as Ctx
-    component "services/apiClient.js\n(fetch wrapper, JWT header,\nenvelope unwrap, ApiError)" as Api
-  }
+node "Presentation tier\nWeb browser - React 18 SPA (Vite, React Router)" as B {
+  component "Pages\nHome, Destinations,\nDestination Details, Plan Trip,\nMy Trips, Trip Details,\nLogin, Register" as Pages
+  component "AuthContext +\nProtectedRoute\n(JWT in localStorage)" as Ctx
+  component "services/apiClient.js\nfetch wrapper, Bearer token,\nenvelope unwrap, ApiError" as Api
 }
 
-node "Application tier - Node.js + Express REST API (/api/v1, port 4100)" as S {
-  component "Middleware\nhelmet, cors, rate limit,\nJWT auth, Zod validate, errorHandler" as MW
+node "Application tier\nNode.js + Express REST API (/api/v1, port 4100)" as S {
+  component "Middleware\nhelmet, cors, rate limit,\nJWT auth, Zod validate,\nerrorHandler" as MW
   component "Routes + Controllers\nauth, destinations, planner,\nbudget, trips, health" as Ctrl
   component "Services\nauth, destination, itinerary,\nbudget, trip" as Svc
-  component "Mongoose models\nUser, Destination, Activity, Trip" as Mod
-  package "Provider adapters" as Prov {
-    component "Local providers\n(haversine route,\nactivities collection)" as LP
-    component "Google providers\n(4 s timeout,\nfallback to local)" as GP
-  }
+  component "Provider adapters\nRouteProvider / PlacesProvider\nGoogle (4 s timeout) with\nfallback to Local" as Prov
+  component "Mongoose models\nUser, Destination,\nActivity, Trip" as Mod
 }
 
-node "Data tier" as D {
-  database "MongoDB 7\nsmart_trip_planner\nusers, destinations,\nactivities, trips" as DB
-}
+database "Data tier - MongoDB 7\ndatabase smart_trip_planner\n\nusers, destinations,\nactivities, trips" as DB
 
-cloud "Google Maps Platform" as G {
+cloud "Google Maps Platform\n(optional)" as G {
   component "Places API (New)" as GPl
   component "Distance Matrix API" as GDM
 }
 
-Pages --> Comp
-Pages --> Ctx
-Pages --> Api
-Ctx --> Api
-Api --> MW : HTTPS / JSON\nAuthorization: Bearer JWT
-MW --> Ctrl
-Ctrl --> Svc
-Svc --> Mod
-Svc --> Prov
-Mod --> DB : Mongoose (TCP 27017)
-LP --> Mod
-GP ..> LP : on failure
-GP --> GPl : HTTPS
-GP --> GDM : HTTPS
+Pages -right-> Ctx : uses
+Ctx -right-> Api
+Api -down-> MW : HTTP / JSON\nAuthorization: Bearer JWT
+MW -right-> Ctrl
+Ctrl -right-> Svc
+Svc -down-> Mod
+Svc -down-> Prov
+Prov .left.> Mod : local fallback\nreads activities
+Mod -down-> DB : Mongoose\nTCP 27017
+Prov -right-> GPl : HTTPS
+Prov -right-> GDM : HTTPS
+GPl -[hidden]down- GDM
 @enduml

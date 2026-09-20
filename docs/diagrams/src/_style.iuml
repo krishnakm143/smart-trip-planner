@@ -5,7 +5,7 @@ skinparam defaultFontName Helvetica
 skinparam defaultFontSize 12
 skinparam defaultFontColor #1B2A33
 skinparam ArrowColor #0F5C6E
-skinparam ArrowFontSize 11
+skinparam ArrowFontSize 12
 skinparam ArrowFontColor #1B2A33
 skinparam roundCorner 8
 skinparam TitleFontSize 15
@@ -66,7 +66,7 @@ skinparam partition {
 skinparam sequence {
   ParticipantBackgroundColor #E6F1F3
   ParticipantBorderColor #0F5C6E
-  ParticipantFontSize 12
+  ParticipantFontSize 13
   ParticipantFontStyle bold
   ActorBackgroundColor #E6F1F3
   ActorBorderColor #0F5C6E

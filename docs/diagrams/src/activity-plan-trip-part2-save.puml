@@ -1,0 +1,39 @@
+@startuml activity-plan-trip-part2-save
+!include _style.iuml
+title Plan Trip - Part 2: Save trip
+|Traveller|
+start
+|React Client|
+:Plan preview is displayed
+(from Part 1);
+|Traveller|
+if (Save trip?) then (no)
+  stop
+else (yes)
+endif
+|React Client|
+if (Logged in?) then (no)
+  :Keep PlanInput in sessionStorage
+  (stp.pendingPlan);
+  |Traveller|
+  :Login or register;
+  |React Client|
+  :Return to /plan and restore preview;
+else (yes)
+endif
+:POST /trips (PlanInput + title)
+Authorization: Bearer JWT;
+|Express API|
+:Verify JWT; regenerate itinerary + budget
+(client numbers are never trusted);
+|MongoDB / Providers|
+:Insert trip document
+(status = planned);
+|Express API|
+:201 { trip };
+|React Client|
+:Navigate to Trip Details (/trips/:id);
+|Traveller|
+:Review saved trip;
+stop
+@enduml

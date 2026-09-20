@@ -1,4 +1,4 @@
-@startuml sequence-plan-and-save
+@startuml sequence-plan-preview
 !include _style.iuml
 hide footbox
 skinparam maxMessageSize 300
@@ -9,10 +9,7 @@ participant "planner\nController" as PC
 participant "itinerary\nService" as IS
 participant "Route\nProvider" as RP
 participant "budget\nService" as BS
-participant "tripController /\ntripService" as TS
 database "MongoDB" as DB
-
-== Generate plan preview (public) ==
 T -> P : submit plan form
 P -> A : previewPlan(planInput)
 A -> PC : POST /api/v1/\nplanner/preview
@@ -36,26 +33,4 @@ BS --> PC : budget
 PC --> A : 200 { success, data,\nmeta.provider }
 A --> P : { destination, days,\nitinerary, budget }
 P --> T : show itinerary +\nbudget preview
-
-== Save trip (JWT required) ==
-T -> P : click "Save trip"
-opt traveller not logged in
-  P -> P : sessionStorage\nstp.pendingPlan = planInput
-  P --> T : redirect to /login
-  T -> P : log in, return to /plan\n(preview restored)
-end
-P -> A : createTrip(planInput, title)
-A -> TS : POST /api/v1/trips\nAuthorization: Bearer <jwt>
-TS -> TS : auth middleware\nverifies JWT -> req.user
-TS -> DB : find destination + activities
-DB --> TS : destination, activities[]
-TS -> IS : regenerate itinerary\n(server side)
-IS --> TS : ItineraryDay[]
-TS -> BS : estimateBudget(...)
-BS --> TS : budget
-TS -> DB : insert trip { user, destination,\nitinerary, budget, status: planned }
-DB --> TS : trip
-TS --> A : 201 { trip }
-A --> P : trip
-P --> T : navigate to /trips/:id\n(Trip Details)
 @enduml
