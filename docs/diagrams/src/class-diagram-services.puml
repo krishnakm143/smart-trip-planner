@@ -1,0 +1,84 @@
+@startuml class-diagram-services
+!include _style.iuml
+hide circle
+hide empty members
+skinparam nodesep 30
+skinparam ranksep 45
+
+class AuthService <<service>> {
+  +register(name, email, password) : {user, token}
+  +login(email, password) : {user, token}
+  +getCurrentUser(userId) : User
+  -signToken(user) : String
+}
+class DestinationService <<service>> {
+  +list(search, category, page, limit) : {items, total, page, limit}
+  +getBySlug(slug) : {destination, activities}
+  +discover(slug, type) : {items, provider}
+}
+class ItineraryService <<service>> {
+  +generateItinerary(activities, days, pace,
+    interests, startDate, routeProvider) : ItineraryDay[]
+  -scoreActivity(activity, interests) : Number
+  -buildDay(pool, hoursPerDay) : ItineraryItem[]
+  -scheduleDay(items, date) : ItineraryDay
+}
+class BudgetService <<service>> {
+  +estimateBudget(dailyCost, tier, days,
+    travelers, activityFeesPerPerson) : Budget
+}
+class TripService <<service>> {
+  +buildPlan(planInput) : {destination, days, itinerary, budget}
+  +createTrip(userId, planInput, title) : Trip
+  +listTrips(userId, status) : TripSummary[]
+  +getTrip(userId, tripId) : Trip
+  +updateTrip(userId, tripId, patch) : Trip
+  +deleteTrip(userId, tripId) : ObjectId
+}
+
+interface RouteProvider {
+  +getLeg(from : GeoPoint, to : GeoPoint) : {km, minutes}
+}
+interface PlacesProvider {
+  +discover(destination, type) : DiscoveredPlace[]
+}
+class LocalRouteProvider {
+  haversine x 1.3, 25 km/h
+}
+class GoogleRouteProvider {
+  Distance Matrix API, 4 s timeout
+  -fallback : LocalRouteProvider
+}
+class LocalPlacesProvider {
+  reads activities collection
+}
+class GooglePlacesProvider {
+  Places API (New) searchText, 4 s timeout
+  -fallback : LocalPlacesProvider
+}
+
+class User <<model>>
+class Destination <<model>>
+class Activity <<model>>
+class Trip <<model>>
+
+LocalRouteProvider ..|> RouteProvider
+GoogleRouteProvider ..|> RouteProvider
+LocalPlacesProvider ..|> PlacesProvider
+GooglePlacesProvider ..|> PlacesProvider
+GoogleRouteProvider o--> LocalRouteProvider : falls back to
+GooglePlacesProvider o--> LocalPlacesProvider : falls back to
+
+TripService ..> ItineraryService : uses
+TripService ..> BudgetService : uses
+ItineraryService ..> RouteProvider : uses
+DestinationService ..> PlacesProvider : uses
+
+AuthService ..> User
+DestinationService ..> Destination
+DestinationService ..> Activity
+TripService ..> Trip
+TripService ..> Destination
+TripService ..> Activity
+LocalPlacesProvider ..> Activity
+@enduml

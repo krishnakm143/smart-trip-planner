@@ -1,0 +1,50 @@
+@startuml architecture
+!include _style.iuml
+skinparam componentStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 40
+
+node "Presentation tier - Web browser" as B {
+  package "React 18 SPA (Vite, React Router)" as SPA {
+    component "Pages\nHome, Destinations, Destination Details,\nPlan Trip, My Trips, Trip Details, Login, Register" as Pages
+    component "Shared components\nDestinationCard, ItineraryDay,\nBudgetBreakdown, state views" as Comp
+    component "AuthContext +\nProtectedRoute" as Ctx
+    component "services/apiClient.js\n(fetch wrapper, JWT header,\nenvelope unwrap, ApiError)" as Api
+  }
+}
+
+node "Application tier - Node.js + Express REST API (/api/v1, port 4100)" as S {
+  component "Middleware\nhelmet, cors, rate limit,\nJWT auth, Zod validate, errorHandler" as MW
+  component "Routes + Controllers\nauth, destinations, planner,\nbudget, trips, health" as Ctrl
+  component "Services\nauth, destination, itinerary,\nbudget, trip" as Svc
+  component "Mongoose models\nUser, Destination, Activity, Trip" as Mod
+  package "Provider adapters" as Prov {
+    component "Local providers\n(haversine route,\nactivities collection)" as LP
+    component "Google providers\n(4 s timeout,\nfallback to local)" as GP
+  }
+}
+
+node "Data tier" as D {
+  database "MongoDB 7\nsmart_trip_planner\nusers, destinations,\nactivities, trips" as DB
+}
+
+cloud "Google Maps Platform" as G {
+  component "Places API (New)" as GPl
+  component "Distance Matrix API" as GDM
+}
+
+Pages --> Comp
+Pages --> Ctx
+Pages --> Api
+Ctx --> Api
+Api --> MW : HTTPS / JSON\nAuthorization: Bearer JWT
+MW --> Ctrl
+Ctrl --> Svc
+Svc --> Mod
+Svc --> Prov
+Mod --> DB : Mongoose (TCP 27017)
+LP --> Mod
+GP ..> LP : on failure
+GP --> GPl : HTTPS
+GP --> GDM : HTTPS
+@enduml

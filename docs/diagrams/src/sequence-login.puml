@@ -1,0 +1,58 @@
+@startuml sequence-login
+!include _style.iuml
+hide footbox
+skinparam maxMessageSize 190
+
+actor Traveller as T
+participant "LoginPage" as L
+participant "AuthContext" as C
+participant "apiClient" as A
+participant "authController" as AC
+participant "authService" as S
+database "MongoDB\n(users)" as DB
+
+== Login ==
+T -> L : enter email + password, submit
+L -> C : login(email, password)
+C -> A : post("/auth/login", body)
+A -> AC : POST /api/v1/auth/login
+AC -> AC : rate limit (20 / 15 min / IP),\nvalidate body [Zod]
+AC -> S : login(email, password)
+S -> DB : findOne({ email }).select("+passwordHash")
+DB --> S : user | null
+alt user found and bcrypt.compare succeeds
+  S -> S : sign JWT (JWT_EXPIRES_IN = 7d)
+  S --> AC : { user, token }
+  AC --> A : 200 { success: true, data: { user, token } }
+  A --> C : { user, token }
+  C -> C : localStorage.setItem(token), setUser(user)
+  C --> L : resolved
+  L --> T : redirect to state.from (default /trips)
+else unknown email or wrong password
+  S --> AC : throw ApiError(401, UNAUTHORIZED)
+  AC --> A : 401 { success: false, error }
+  A --> C : throw ApiError
+  C --> L : rejected
+  L --> T : show "Invalid email or password"
+end
+
+== Session restore on page load ==
+T -> C : open / reload application
+C -> C : read token from localStorage
+opt token present
+  C -> A : get("/auth/me")
+  A -> AC : GET /api/v1/auth/me\nAuthorization: Bearer <jwt>
+  AC -> AC : auth middleware verifies JWT
+  alt token valid
+    AC -> DB : findById(payload.sub)
+    DB --> AC : user
+    AC --> A : 200 { user }
+    A --> C : user
+    C -> C : setUser(user)
+  else token expired or invalid
+    AC --> A : 401 UNAUTHORIZED
+    A -> C : logout(): clear token
+    C --> T : redirect to /login
+  end
+end
+@enduml

@@ -1,0 +1,50 @@
+@startuml use-case
+!include _style.iuml
+left to right direction
+
+actor "Registered\nTraveller" as Trav
+actor "Guest\n(Visitor)" as Guest
+Trav -|> Guest
+
+actor "Google Places\nAPI" as GP <<external system>>
+actor "Google Distance\nMatrix API" as GDM <<external system>>
+
+rectangle "Smart Trip Planner" {
+  usecase "Delete trip" as UC14
+  usecase "Update trip\nnotes / status" as UC13
+  usecase "View trip details" as UC12
+  usecase "View my trips" as UC11
+  usecase "Save trip" as UC10
+  usecase "Plan trip" as UC5
+  usecase "Generate itinerary" as UC6
+  usecase "Estimate budget" as UC7
+  usecase "Browse destinations" as UC1
+  usecase "Search / filter\ndestinations" as UC2
+  usecase "View destination\ndetails" as UC3
+  usecase "Discover nearby\nplaces" as UC4
+  usecase "Register" as UC8
+  usecase "Login" as UC9
+}
+
+Trav -- UC14
+Trav -- UC13
+Trav -- UC12
+Trav -- UC11
+Trav -- UC10
+
+Guest -- UC5
+Guest -- UC1
+Guest -- UC2
+Guest -- UC3
+Guest -- UC4
+Guest -- UC8
+Guest -- UC9
+
+UC10 .[norank].> UC5 :                           <<extend>>\n                          {logged in}
+UC2 .[norank].> UC1 :                           <<extend>>
+UC5 ..> UC7 : <<include>>
+UC5 ..> UC6 : <<include>>
+
+UC6 -- GDM
+UC4 --- GP
+@enduml

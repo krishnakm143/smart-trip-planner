@@ -1,0 +1,111 @@
+skinparam dpi 200
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam defaultFontColor #1B2A33
+skinparam ArrowColor #0F5C6E
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #1B2A33
+skinparam roundCorner 8
+skinparam TitleFontSize 15
+skinparam TitleFontStyle bold
+skinparam TitleFontColor #0F5C6E
+skinparam NoteBackgroundColor #F4F6F7
+skinparam NoteBorderColor #8FA3AD
+skinparam NoteFontSize 11
+skinparam stereotypeCBackgroundColor #E6F1F3
+skinparam stereotypeIBackgroundColor #E6F1F3
+skinparam stereotypeEBackgroundColor #E6F1F3
+
+skinparam actor {
+  BackgroundColor #E6F1F3
+  BorderColor #0F5C6E
+  FontSize 12
+}
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #0F5C6E
+  FontSize 12
+}
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #0F5C6E
+  FontStyle bold
+}
+skinparam class {
+  BackgroundColor #FFFFFF
+  HeaderBackgroundColor #E6F1F3
+  BorderColor #0F5C6E
+  FontStyle bold
+  FontSize 12
+  AttributeFontSize 11
+  AttributeIconSize 0
+}
+skinparam activity {
+  BackgroundColor #FFFFFF
+  BorderColor #0F5C6E
+  DiamondBackgroundColor #E6F1F3
+  DiamondBorderColor #0F5C6E
+  StartColor #0F5C6E
+  EndColor #0F5C6E
+  BarColor #0F5C6E
+  FontSize 11
+}
+skinparam swimlane {
+  BorderColor #0F5C6E
+  BorderThickness 1
+  TitleFontSize 13
+  TitleFontStyle bold
+  TitleFontColor #0F5C6E
+}
+skinparam partition {
+  BorderColor #0F5C6E
+  FontColor #0F5C6E
+}
+skinparam sequence {
+  ParticipantBackgroundColor #E6F1F3
+  ParticipantBorderColor #0F5C6E
+  ParticipantFontSize 12
+  ParticipantFontStyle bold
+  ActorBackgroundColor #E6F1F3
+  ActorBorderColor #0F5C6E
+  LifeLineBorderColor #8FA3AD
+  LifeLineBackgroundColor #FFFFFF
+  GroupBackgroundColor #E6F1F3
+  GroupBorderColor #0F5C6E
+  GroupHeaderFontSize 11
+  GroupFontSize 11
+  GroupBodyBackgroundColor #FFFFFF
+  DividerBackgroundColor #F4F6F7
+  DividerBorderColor #8FA3AD
+  MessageAlign left
+}
+skinparam database {
+  BackgroundColor #E6F1F3
+  BorderColor #0F5C6E
+}
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #0F5C6E
+  FontSize 12
+}
+skinparam node {
+  BackgroundColor #F9FBFB
+  BorderColor #0F5C6E
+  FontStyle bold
+}
+skinparam package {
+  BackgroundColor #F9FBFB
+  BorderColor #0F5C6E
+  FontStyle bold
+  FontSize 12
+}
+skinparam cloud {
+  BackgroundColor #F4F6F7
+  BorderColor #8FA3AD
+}
+skinparam interface {
+  BackgroundColor #E6F1F3
+  BorderColor #0F5C6E
+}

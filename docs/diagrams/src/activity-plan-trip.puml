@@ -1,0 +1,93 @@
+@startuml activity-plan-trip
+!include _style.iuml
+|Traveller|
+start
+:Choose destination
+(Destinations page or /plan);
+|React Client|
+:Open Plan Trip form
+(prefill ?destination=slug);
+|Traveller|
+repeat
+  :Fill dates, travellers, budget tier,
+  interests and pace;
+  |React Client|
+  :Validate form;
+  backward :Show field errors;
+repeat while (Input valid?) is (no) not (yes)
+:POST /planner/preview (PlanInput);
+|Express API|
+:Validate PlanInput (Zod):
+endDate >= startDate, days <= 14,
+startDate not in past;
+if (Valid?) then (no)
+  :400 VALIDATION_ERROR
+  with details;
+  |React Client|
+  :Show error state (retry);
+  stop
+else (yes)
+endif
+|Express API|
+:Request destination + activities;
+|MongoDB / Providers|
+:Find destination and
+its activities;
+|Express API|
+:Score activities
+(rating + 1.5 if interest match);
+:hoursPerDay from pace (6 / 8 / 10);
+repeat
+  :Seed day with highest-scored
+  unassigned activity;
+  |MongoDB / Providers|
+  :RouteProvider.getLeg(from, to)
+  Google Distance Matrix, or
+  local haversine fallback;
+  |Express API|
+  :Add nearest activities while
+  visit + travel hours fit;
+  :Reorder morning first / evening last,
+  recompute legs;
+repeat while (More days?) is (yes) not (no)
+:Schedule each day from 09:00
+(+ travel, 60-min lunch gap);
+:Estimate budget
+(stay, food, transport, activities);
+:200 { destination, days,
+itinerary, budget }, meta.provider;
+|React Client|
+:Show plan preview
+(itinerary + budget breakdown);
+|Traveller|
+if (Save trip?) then (no)
+  stop
+else (yes)
+endif
+|React Client|
+if (Logged in?) then (no)
+  :Keep PlanInput in sessionStorage
+  (stp.pendingPlan);
+  |Traveller|
+  :Login or register;
+  |React Client|
+  :Return to /plan and
+  restore preview;
+else (yes)
+endif
+:POST /trips (PlanInput + title)
+Authorization: Bearer JWT;
+|Express API|
+:Verify JWT, regenerate
+itinerary + budget;
+|MongoDB / Providers|
+:Insert trip document;
+|Express API|
+:201 { trip };
+|React Client|
+:Navigate to Trip Details
+(/trips/:id);
+|Traveller|
+:Review saved trip;
+stop
+@enduml

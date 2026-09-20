@@ -1,0 +1,127 @@
+@startuml class-diagram
+!include _style.iuml
+hide circle
+hide empty methods
+skinparam nodesep 35
+skinparam ranksep 45
+
+class User <<collection>> {
+  _id : ObjectId
+  name : String
+  email : String
+  passwordHash : String
+  role : Role
+  createdAt : Date
+  updatedAt : Date
+}
+enum Role {
+  traveler
+  admin
+}
+
+class Destination <<collection>> {
+  _id : ObjectId
+  name : String
+  slug : String
+  state : String
+  country : String
+  category : String
+  tagline : String
+  description : String
+  heroImage : String
+  location : GeoPoint
+  bestSeason : String
+  idealDays : {min, max : Number}
+  rating : Number
+  tags : String[]
+  createdAt, updatedAt : Date
+}
+class DailyCost <<embedded>> {
+  economy : TierCost
+  standard : TierCost
+  luxury : TierCost
+}
+class TierCost <<embedded>> {
+  stay : Number
+  food : Number
+  transport : Number
+}
+class GeoPoint <<embedded>> {
+  lat : Number
+  lng : Number
+}
+
+class Activity <<collection>> {
+  _id : ObjectId
+  destination : ObjectId
+  name : String
+  type : String
+  description : String
+  location : GeoPoint
+  durationHours : Number
+  entryFee : Number
+  rating : Number
+  bestTime : String
+  source : String
+  externalId : String
+  createdAt, updatedAt : Date
+}
+
+class Trip <<collection>> {
+  _id : ObjectId
+  user : ObjectId
+  destination : ObjectId
+  title : String
+  startDate : Date
+  endDate : Date
+  days : Number
+  travelers : Number
+  budgetTier : String
+  interests : String[]
+  pace : String
+  status : String
+  notes : String
+  createdAt, updatedAt : Date
+}
+class ItineraryDay <<embedded>> {
+  day : Number
+  date : Date
+  totalVisitHours : Number
+  totalTravelKm : Number
+  note : String
+}
+class ItineraryItem <<embedded>> {
+  activity : ObjectId
+  name : String
+  type : String
+  location : GeoPoint
+  startTime : String
+  endTime : String
+  durationHours : Number
+  entryFee : Number
+  travelKmFromPrev : Number
+  travelMinutesFromPrev : Number
+}
+class Budget <<embedded>> {
+  tier : String
+  currency : String = "INR"
+  rooms : Number
+  nights : Number
+  breakdown : {stay, food,
+    transport, activities : Number}
+  total : Number
+  perPerson : Number
+}
+
+User "1" -- "0..*" Trip : owns >
+User --> Role
+Trip "0..*" --> "1" Destination : planned for >
+Destination "1" -- "0..*" Activity : offers >
+Destination "1" *-- "1" DailyCost
+DailyCost "1" *-- "3" TierCost
+Destination *-- "1" GeoPoint
+Trip "1" *-- "1..14" ItineraryDay : itinerary
+ItineraryDay "1" *-- "0..*" ItineraryItem : items
+Trip "1" *-- "1" Budget : budget
+ItineraryItem "0..*" ..> "1" Activity : snapshot of >
+@enduml
