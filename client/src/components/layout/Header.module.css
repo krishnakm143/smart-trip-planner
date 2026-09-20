@@ -61,6 +61,7 @@
 
 .navLink {
   padding-block: var(--space-2);
+  white-space: nowrap;
   font-weight: 500;
   color: var(--ink-soft);
   text-decoration: none;
@@ -106,7 +107,9 @@
   height: 1.3rem;
 }
 
-@media (max-width: 760px) {
+/* The signed-in header carries three links, a name and a log-out button, so the
+   menu collapses before the row runs out of room on tablets. */
+@media (max-width: 860px) {
   .bar {
     flex-wrap: wrap;
     gap: 0;

@@ -301,7 +301,7 @@ Rules: `endDate ≥ startDate`, `days = diff + 1 ≤ 14`, `startDate` not in the
 
 ### Cross-cutting
 - `helmet`, `cors` (origin = `CLIENT_ORIGIN`), `express.json({ limit: "100kb" })`, `morgan` in dev.
-- `express-rate-limit` on `/auth/*`: 20 requests / 15 min / IP.
+- `express-rate-limit` on `/auth/register` and `/auth/login`: 20 requests / 15 min / IP. `/auth/me` is not limited because the client calls it on every page load.
 - Zod validation via `validate(schema)` middleware → `VALIDATION_ERROR` with `details`.
 - Central `errorHandler`: maps `ApiError`, Zod, Mongoose `CastError`/`ValidationError`, duplicate key 11000, JWT errors. Stack traces never leave the server.
 
