@@ -48,7 +48,7 @@ describe('error envelope', () => {
   });
 
   it('sets security headers and hides the framework', async () => {
-    const response = await api.get('/api/v1/health');
+    const response = await api.get('/api/v1/health').set('Origin', 'http://localhost:5173');
 
     expect(response.headers['x-powered-by']).toBeUndefined();
     expect(response.headers['x-content-type-options']).toBe('nosniff');

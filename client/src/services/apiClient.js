@@ -1,4 +1,5 @@
-const BASE_URL = '/api/v1'
+// Same-origin behind the dev proxy; an absolute URL when the API is hosted elsewhere.
+const BASE_URL = import.meta.env.VITE_API_URL ?? '/api/v1'
 const TOKEN_KEY = 'stp.token'
 const UNREACHABLE_MESSAGE = 'The server is not reachable. Check that the API is running, then try again.'
 

@@ -11,7 +11,14 @@ const envSchema = z.object({
   MONGODB_URI: z.string().regex(/^mongodb(\+srv)?:\/\//, 'must be a mongodb:// connection string'),
   JWT_SECRET: z.string().min(32, 'must be at least 32 characters'),
   JWT_EXPIRES_IN: z.string().min(1).default('7d'),
-  CLIENT_ORIGIN: z.url().default('http://localhost:5173'),
+  // One origin, or several separated by commas (local client and the hosted site).
+  CLIENT_ORIGIN: z
+    .string()
+    .default('http://localhost:5173')
+    .transform((value) => value.split(',').map((origin) => origin.trim()))
+    .pipe(z.array(z.url('must be a URL such as https://example.com')).min(1)),
+  // Number of reverse proxies in front of the API; 1 on hosts such as Railway or Render.
+  TRUST_PROXY: z.coerce.number().int().min(0).default(0),
   MAPS_PROVIDER: z.enum(['local', 'osm', 'google']).optional(),
   GOOGLE_MAPS_API_KEY: z.string().trim().default(''),
 });
@@ -43,7 +50,8 @@ export const config = Object.freeze({
   mongodbUri: env.MONGODB_URI,
   jwtSecret: env.JWT_SECRET,
   jwtExpiresIn: env.JWT_EXPIRES_IN,
-  clientOrigin: env.CLIENT_ORIGIN,
+  clientOrigins: env.CLIENT_ORIGIN.map((origin) => new URL(origin).origin),
+  trustProxy: env.TRUST_PROXY,
   mapsProvider: env.MAPS_PROVIDER ?? (env.GOOGLE_MAPS_API_KEY ? 'google' : 'local'),
   googleMapsApiKey: env.GOOGLE_MAPS_API_KEY,
 });
