@@ -206,20 +206,26 @@ Deterministic: same input → same output (ties broken by name ascending).
    a. Seed the day with the highest-scored unassigned activity.
    b. Repeatedly pick the **nearest unassigned** activity (RouteProvider distance
       from the last stop) among the top-scored half of the remaining pool, and add
-      it if `visitHours + travelHours` stays ≤ `hoursPerDay`. Stop when nothing fits.
+      it if `visitHours + travelHours` stays ≤ `hoursPerDay`. If nothing in the top
+      half fits, the lower half is tried before the day closes. An activity longer
+      than `hoursPerDay` never seeds a day.
    c. Move `bestTime = evening` items to the end and `morning` items to the front
       (stable), then recompute leg distances.
 4. **Schedule** each day from 09:00: `startTime = previous endTime + travelMinutes`
    (rounded up to 5 min); a 60-minute lunch gap is inserted before the first item
-   that would start after 13:00.
+   that would start after 13:00. `evening` items never start before 17:00.
 5. Days left with no activities get `items: []` and `note: "Free day — explore at your own pace"`.
 
 ### 4.3 Providers — `providers/`
 
 ```
-RouteProvider.getLeg(from, to)            → { km, minutes }
-PlacesProvider.discover(destination, type) → [{ name, type, location, rating, address, externalId, source }]
+RouteProvider.getMatrix(points)            → { provider, leg(i, j) → { km, minutes } }
+RouteProvider.getLeg(from, to)             → { km, minutes }        (wrapper over getMatrix)
+PlacesProvider.discover(destination, type) → { provider, items: [{ name, type, location, rating, address, externalId, source }] }
 ```
+
+The itinerary service asks for one matrix per generation, so the Google
+provider makes a single Distance Matrix request instead of one per leg.
 
 | Provider | Route | Places |
 |---|---|---|

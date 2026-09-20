@@ -39,7 +39,7 @@ export const activitiesBySlug = {
       type: 'nature',
       description:
         'An easy trail from Vashisht through apple orchards and pine forest to a 45 m waterfall.',
-      location: { lat: 32.2716, lng: 77.1922 },
+      location: { lat: 32.2752, lng: 77.188 },
       durationHours: 3,
       entryFee: 0,
       rating: 4.6,
@@ -50,7 +50,7 @@ export const activitiesBySlug = {
       type: 'nature',
       description:
         'Drive through the 9 km Atal Tunnel into Lahaul for the Sissu waterfall, the lake and wide Chandra valley views.',
-      location: { lat: 32.4792, lng: 77.1265 },
+      location: { lat: 32.4689, lng: 77.1323 },
       durationHours: 4,
       entryFee: 0,
       rating: 4.6,
@@ -72,7 +72,7 @@ export const activitiesBySlug = {
       type: 'nature',
       description:
         'A quiet deodar park beside the Beas in the middle of town, with walking paths and a small boating pond.',
-      location: { lat: 32.2447, lng: 77.1905 },
+      location: { lat: 32.2394, lng: 77.1892 },
       durationHours: 1,
       entryFee: 20,
       rating: 4.0,
@@ -218,7 +218,7 @@ export const activitiesBySlug = {
       type: 'food',
       description:
         'A guided walk through a working spice plantation near Ponda followed by a Goan buffet lunch served on banana leaves.',
-      location: { lat: 15.4085, lng: 73.9907 },
+      location: { lat: 15.4082, lng: 74.0238 },
       durationHours: 2.5,
       entryFee: 500,
       rating: 4.3,
@@ -309,7 +309,7 @@ export const activitiesBySlug = {
       type: 'nature',
       description:
         'A jeep safari through a dry deciduous forest reserve inside the city limits with frequent leopard sightings.',
-      location: { lat: 26.854, lng: 75.829 },
+      location: { lat: 26.8551, lng: 75.8334 },
       durationHours: 3,
       entryFee: 1200,
       rating: 4.5,
@@ -433,7 +433,7 @@ export const activitiesBySlug = {
       type: 'culture',
       description:
         'A rural arts and crafts village with traditional huts from western Indian states, working artisans and folk performers.',
-      location: { lat: 24.6086, lng: 73.6497 },
+      location: { lat: 24.6131, lng: 73.6634 },
       durationHours: 2,
       entryFee: 50,
       rating: 4.2,
@@ -458,18 +458,18 @@ export const activitiesBySlug = {
       type: 'nature',
       description:
         'Rolling shola grassland at Rajamalai, home to the endangered Nilgiri tahr. Park buses run from the entrance to the trail.',
-      location: { lat: 10.1497, lng: 77.0486 },
+      location: { lat: 10.1553, lng: 77.0617 },
       durationHours: 3,
       entryFee: 200,
       rating: 4.5,
       bestTime: 'morning',
     },
     {
-      name: 'Kolukkumalai Sunrise Jeep Safari',
+      name: 'Kolukkumalai Jeep Safari',
       type: 'adventure',
       description:
-        'A rough jeep track from Suryanelli up to the world’s highest tea estate at 2,100 m for sunrise above the clouds.',
-      location: { lat: 10.0753, lng: 77.2214 },
+        'A rough jeep track from Suryanelli up to the world’s highest tea estate at 2,100 m, with views above the clouds at sunrise.',
+      location: { lat: 10.0827, lng: 77.2218 },
       durationHours: 5,
       entryFee: 800,
       rating: 4.7,
@@ -502,7 +502,7 @@ export const activitiesBySlug = {
       type: 'sightseeing',
       description:
         'A lakeside bend on the Top Station road where the hills throw your voice back across the water.',
-      location: { lat: 10.126, lng: 77.163 },
+      location: { lat: 10.1208, lng: 77.1517 },
       durationHours: 0.5,
       entryFee: 0,
       rating: 4.0,
@@ -524,7 +524,7 @@ export const activitiesBySlug = {
       type: 'nature',
       description:
         'The highest point on the Munnar–Kodaikanal road at 1,700 m, looking down on the Tamil Nadu plains and the Theni valley.',
-      location: { lat: 10.1237, lng: 77.243 },
+      location: { lat: 10.1236, lng: 77.2458 },
       durationHours: 1.5,
       entryFee: 25,
       rating: 4.4,
@@ -535,7 +535,7 @@ export const activitiesBySlug = {
       type: 'nature',
       description:
         'A waterfall in a narrow forested valley off the Pallivasal road, reached by a short walk through plantations.',
-      location: { lat: 10.056, lng: 77.0437 },
+      location: { lat: 10.0535, lng: 77.0586 },
       durationHours: 1.5,
       entryFee: 0,
       rating: 4.2,
@@ -546,7 +546,7 @@ export const activitiesBySlug = {
       type: 'nature',
       description:
         'A ridge a few kilometres from town with an open view over tea, coffee and cardamom estates, best near sunset.',
-      location: { lat: 10.0627, lng: 77.0502 },
+      location: { lat: 10.0615, lng: 77.0648 },
       durationHours: 1,
       entryFee: 0,
       rating: 4.3,
@@ -648,7 +648,7 @@ export const activitiesBySlug = {
       type: 'culture',
       description:
         'A private collection of Swarovski crystal, ivory, porcelain and Tanjore paintings gathered by a coir-exporting family.',
-      location: { lat: 9.4989, lng: 76.3267 },
+      location: { lat: 9.4992, lng: 76.3288 },
       durationHours: 1,
       entryFee: 150,
       rating: 4.4,
@@ -695,7 +695,7 @@ export const activitiesBySlug = {
       type: 'adventure',
       description:
         'India’s highest fixed-platform bungee at 83 m, over a rocky tributary valley of the Ganga.',
-      location: { lat: 30.0867, lng: 78.4137 },
+      location: { lat: 30.0641, lng: 78.402 },
       durationHours: 3,
       entryFee: 4000,
       rating: 4.6,
@@ -706,7 +706,7 @@ export const activitiesBySlug = {
       type: 'spiritual',
       description:
         'The main bathing ghat of the town, where priests perform the Maha Aarti with tiered lamps at dusk.',
-      location: { lat: 30.1034, lng: 78.2988 },
+      location: { lat: 30.1036, lng: 78.3049 },
       durationHours: 1.5,
       entryFee: 0,
       rating: 4.7,
@@ -717,7 +717,7 @@ export const activitiesBySlug = {
       type: 'spiritual',
       description:
         'The largest ashram in Rishikesh, on the east bank near Ram Jhula, with riverside gardens and daily yoga and satsang.',
-      location: { lat: 30.1211, lng: 78.3138 },
+      location: { lat: 30.1192, lng: 78.3122 },
       durationHours: 1.5,
       entryFee: 0,
       rating: 4.7,
@@ -768,11 +768,11 @@ export const activitiesBySlug = {
       bestTime: 'morning',
     },
     {
-      name: 'Kunjapuri Temple Sunrise',
+      name: 'Kunjapuri Temple Viewpoint',
       type: 'nature',
       description:
-        'A hilltop Shakti Peeth at 1,650 m with a sunrise panorama of Swargarohini, Gangotri and Chaukhamba peaks.',
-      location: { lat: 30.17, lng: 78.31 },
+        'A hilltop Shakti Peeth at 1,650 m with a panorama of the Swargarohini, Gangotri and Chaukhamba peaks, popular at sunrise.',
+      location: { lat: 30.1836, lng: 78.3072 },
       durationHours: 3,
       entryFee: 0,
       rating: 4.5,
@@ -793,10 +793,10 @@ export const activitiesBySlug = {
 
   varanasi: [
     {
-      name: 'Sunrise Boat Ride from Assi Ghat',
+      name: 'Ganga Boat Ride from Assi Ghat',
       type: 'sightseeing',
       description:
-        'A rowing-boat trip downstream past the ghats as the city wakes up, following the Subah-e-Banaras morning aarti.',
+        'A rowing-boat trip downstream past the ghats, at its best at dawn after the Subah-e-Banaras morning aarti.',
       location: { lat: 25.2888, lng: 83.0062 },
       durationHours: 1.5,
       entryFee: 300,
@@ -852,7 +852,7 @@ export const activitiesBySlug = {
       type: 'culture',
       description:
         'The university museum on the leafy BHU campus with miniature paintings, sculpture and Banarasi textiles.',
-      location: { lat: 25.2677, lng: 82.9913 },
+      location: { lat: 25.2714, lng: 82.9958 },
       durationHours: 2,
       entryFee: 20,
       rating: 4.4,
@@ -906,11 +906,11 @@ export const activitiesBySlug = {
 
   darjeeling: [
     {
-      name: 'Tiger Hill Sunrise',
+      name: 'Tiger Hill',
       type: 'nature',
       description:
-        'The 2,590 m viewpoint where first light turns Kanchenjunga pink; on a clear day Everest is visible too.',
-      location: { lat: 26.9956, lng: 88.2896 },
+        'The 2,590 m viewpoint famous for first light on Kanchenjunga; on a clear day Everest is visible too. Leave by 4 am for sunrise.',
+      location: { lat: 26.9949, lng: 88.2853 },
       durationHours: 2.5,
       entryFee: 50,
       rating: 4.6,
@@ -965,7 +965,7 @@ export const activitiesBySlug = {
       type: 'culture',
       description:
         'A working estate from 1854 just below town, with a guided factory tour on withering, rolling and grading, and a tasting.',
-      location: { lat: 27.053, lng: 88.259 },
+      location: { lat: 27.0511, lng: 88.2585 },
       durationHours: 1.5,
       entryFee: 100,
       rating: 4.3,
@@ -976,7 +976,7 @@ export const activitiesBySlug = {
       type: 'adventure',
       description:
         'A cable car from Singamari down over the tea gardens of the Rangeet valley and back.',
-      location: { lat: 27.064, lng: 88.256 },
+      location: { lat: 27.0613, lng: 88.2539 },
       durationHours: 1.5,
       entryFee: 200,
       rating: 4.2,
@@ -987,7 +987,7 @@ export const activitiesBySlug = {
       type: 'spiritual',
       description:
         'A white Nipponzan Myohoji stupa with four gilded Buddha images, beside a small Japanese temple on Jalapahar hill.',
-      location: { lat: 27.029, lng: 88.259 },
+      location: { lat: 27.0276, lng: 88.259 },
       durationHours: 1,
       entryFee: 0,
       rating: 4.5,
@@ -1078,7 +1078,7 @@ export const activitiesBySlug = {
       type: 'culture',
       description:
         'The ruins of a Paliwal Brahmin village deserted overnight in the early 1800s, now a protected heritage site.',
-      location: { lat: 26.813, lng: 70.796 },
+      location: { lat: 26.8699, lng: 70.7851 },
       durationHours: 1.5,
       entryFee: 50,
       rating: 4.2,
@@ -1136,7 +1136,7 @@ export const activitiesBySlug = {
       type: 'nature',
       description:
         'The endless salt flat of the Great Rann, walked at sunset or under a full moon. A permit is issued at Bhirandiyara check post.',
-      location: { lat: 23.833, lng: 69.664 },
+      location: { lat: 23.8304, lng: 69.5201 },
       durationHours: 3,
       entryFee: 100,
       rating: 4.7,
@@ -1169,7 +1169,7 @@ export const activitiesBySlug = {
       type: 'culture',
       description:
         'A memorial park and museum on Bhujiyo hill dedicated to the victims of the 2001 earthquake, with immersive galleries.',
-      location: { lat: 23.245, lng: 69.69 },
+      location: { lat: 23.2459, lng: 69.6945 },
       durationHours: 2.5,
       entryFee: 300,
       rating: 4.7,
@@ -1180,7 +1180,7 @@ export const activitiesBySlug = {
       type: 'spiritual',
       description:
         'A marble temple rebuilt after the earthquake, with finely carved domes and pillars, close to Hamirsar Lake.',
-      location: { lat: 23.2485, lng: 69.664 },
+      location: { lat: 23.2463, lng: 69.6646 },
       durationHours: 1,
       entryFee: 0,
       rating: 4.6,
@@ -1191,7 +1191,7 @@ export const activitiesBySlug = {
       type: 'shopping',
       description:
         'A Vankar weaving community east of Bhuj where you can watch handloom shawls being made and buy directly from the artisans.',
-      location: { lat: 23.214, lng: 69.735 },
+      location: { lat: 23.2248, lng: 69.7346 },
       durationHours: 1.5,
       entryFee: 0,
       rating: 4.4,
@@ -1202,7 +1202,7 @@ export const activitiesBySlug = {
       type: 'culture',
       description:
         'Home of the last family practising Rogan painting, along with copper-bell makers and lacquer-work artisans.',
-      location: { lat: 23.44, lng: 69.51 },
+      location: { lat: 23.4651, lng: 69.5242 },
       durationHours: 1.5,
       entryFee: 0,
       rating: 4.4,
@@ -1213,10 +1213,10 @@ export const activitiesBySlug = {
       type: 'culture',
       description:
         'A 1920s red-sandstone summer palace of the Kutch rulers at Mandvi, with a rooftop view to the sea.',
-      location: { lat: 22.824, lng: 69.305 },
+      location: { lat: 22.835, lng: 69.286 },
       durationHours: 1.5,
       entryFee: 50,
-      rating: 4.3,
+      rating: 4.4,
       bestTime: 'any',
     },
     {
@@ -1224,19 +1224,19 @@ export const activitiesBySlug = {
       type: 'nature',
       description:
         'A clean, windy beach lined with windmills, with camel rides and dabeli stalls. The wooden-ship yard is nearby on the Rukmavati.',
-      location: { lat: 22.819, lng: 69.349 },
+      location: { lat: 22.8256, lng: 69.3381 },
       durationHours: 2,
       entryFee: 0,
-      rating: 4.3,
+      rating: 4.6,
       bestTime: 'evening',
     },
     {
       name: 'Dholavira',
       type: 'culture',
       description:
-        'The excavated Harappan city on Khadir island with reservoirs, a citadel and a signboard in Indus script. UNESCO World Heritage Site.',
+        'The excavated Harappan city on Khadir island with reservoirs, a citadel and a signboard in Indus script. A UNESCO World Heritage Site and a full-day trip from Bhuj.',
       location: { lat: 23.887, lng: 70.213 },
-      durationHours: 3,
+      durationHours: 6,
       entryFee: 0,
       rating: 4.6,
       bestTime: 'any',
@@ -1311,14 +1311,14 @@ export const activitiesBySlug = {
       bestTime: 'any',
     },
     {
-      name: 'Magnetic Hill',
+      name: 'Magnetic Hill and Gurudwara Pathar Sahib',
       type: 'sightseeing',
       description:
-        'A stretch of the Srinagar highway where an optical illusion makes parked vehicles appear to roll uphill.',
-      location: { lat: 34.17, lng: 77.35 },
-      durationHours: 0.5,
+        'A stretch of the Srinagar highway where an optical illusion makes vehicles appear to roll uphill, next to the army-run Pathar Sahib gurudwara.',
+      location: { lat: 34.171, lng: 77.3525 },
+      durationHours: 1.5,
       entryFee: 0,
-      rating: 4.0,
+      rating: 4.3,
       bestTime: 'any',
     },
     {
@@ -1347,9 +1347,9 @@ export const activitiesBySlug = {
       name: 'Pangong Tso',
       type: 'nature',
       description:
-        'A 134 km long lake at 4,350 m whose water shifts from turquoise to deep blue. The fee covers the inner line permit.',
+        'A 134 km long lake at 4,350 m whose water shifts from turquoise to deep blue. A full-day excursion over Chang La; the fee covers the inner line permit.',
       location: { lat: 33.905, lng: 78.455 },
-      durationHours: 4,
+      durationHours: 6,
       entryFee: 400,
       rating: 4.8,
       bestTime: 'morning',

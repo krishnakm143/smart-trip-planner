@@ -37,6 +37,15 @@ function dayLoadHours(stops, matrix) {
   return minutes / 60;
 }
 
+function nearestFirst(candidates, from, matrix) {
+  return candidates
+    .map((candidate) => ({ candidate, km: matrix.leg(from.index, candidate.index).km }))
+    .sort((a, b) => a.km - b.km || a.candidate.name.localeCompare(b.candidate.name))
+    .map(({ candidate }) => candidate);
+}
+
+// `pool` is sorted by score. The nearest stop among the top-scored half is preferred;
+// the lower half is only considered when none of those fit in the remaining time.
 function pickStopsForDay(pool, capacity, matrix) {
   const seed = pool.find((candidate) => candidate.durationHours <= capacity);
   if (!seed) return [];
@@ -46,12 +55,14 @@ function pickStopsForDay(pool, capacity, matrix) {
 
   while (remaining.length > 0) {
     const last = picked[picked.length - 1];
-    const topHalf = remaining.slice(0, Math.ceil(remaining.length / 2));
-    const next = topHalf
-      .map((candidate) => ({ candidate, km: matrix.leg(last.index, candidate.index).km }))
-      .sort((a, b) => a.km - b.km || a.candidate.name.localeCompare(b.candidate.name))
-      .map(({ candidate }) => candidate)
-      .find((candidate) => dayLoadHours(arrange([...picked, candidate]), matrix) <= capacity);
+    const half = Math.ceil(remaining.length / 2);
+    const candidates = [
+      ...nearestFirst(remaining.slice(0, half), last, matrix),
+      ...nearestFirst(remaining.slice(half), last, matrix),
+    ];
+    const next = candidates.find(
+      (candidate) => dayLoadHours(arrange([...picked, candidate]), matrix) <= capacity,
+    );
 
     if (!next) break;
     picked.push(next);

@@ -126,6 +126,26 @@ describe('generateItinerary', () => {
     expect(second.startTime).toBe('14:30');
   });
 
+  it('keeps evening items from starting before 17:00', async () => {
+    const { itinerary } = await generate({ days: 5 });
+    const eveningNames = activities.filter((a) => a.bestTime === 'evening').map((a) => a.name);
+    const eveningItems = itinerary
+      .flatMap((day) => day.items)
+      .filter((item) => eveningNames.includes(item.name));
+
+    expect(eveningItems.length).toBe(eveningNames.length);
+    for (const item of eveningItems) {
+      expect(toMinutes(item.startTime)).toBeGreaterThanOrEqual(17 * 60);
+    }
+  });
+
+  it('skips activities that are longer than the daily capacity', async () => {
+    const tooLong = { ...activities[0], id: 'long', name: 'All-day Trek', durationHours: 8, rating: 5 };
+    const { itinerary } = await generate({ activities: [tooLong, activities[4]], pace: 'relaxed', days: 2 });
+
+    expect(namesOf(itinerary)).toEqual(['Vashisht Hot Springs']);
+  });
+
   it('marks days without activities as free days', async () => {
     const { itinerary } = await generate({ days: 10 });
     const freeDays = itinerary.filter((day) => day.items.length === 0);

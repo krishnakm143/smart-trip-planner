@@ -19,7 +19,6 @@ export default [
       curly: ['error', 'multi-line'],
       'object-shorthand': 'error',
       'no-shadow': 'error',
-      'no-return-await': 'off',
     },
   },
   {
