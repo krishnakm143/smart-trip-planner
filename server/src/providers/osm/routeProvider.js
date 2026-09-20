@@ -6,7 +6,7 @@ const TABLE_URL = 'https://router.project-osrm.org/table/v1/driving';
 const MAX_POINTS = 50;
 const USER_AGENT = 'SmartTripPlanner/1.0 (MCA minor project)';
 
-async function fetchMatrix(points) {
+async function fetchMatrix(points, headers) {
   if (points.length > MAX_POINTS) {
     throw new Error(`too many points for one table (${points.length})`);
   }
@@ -14,7 +14,7 @@ async function fetchMatrix(points) {
   // OSRM expects longitude first.
   const coordinates = points.map((point) => `${point.lng},${point.lat}`).join(';');
   const body = await fetchJson(`${TABLE_URL}/${coordinates}?annotations=distance,duration`, {
-    headers: { 'User-Agent': USER_AGENT },
+    headers,
   });
   if (body.code !== 'Ok') {
     throw new Error(`OSRM table code ${body.code}`);
@@ -34,12 +34,12 @@ async function fetchMatrix(points) {
   );
 }
 
-export function createOsmRouteProvider({ fallback }) {
+export function createOsmRouteProvider({ fallback, headers = { 'User-Agent': USER_AGENT } }) {
   async function getMatrix(points) {
     if (points.length < 2) return fallback.getMatrix(points);
 
     try {
-      const legs = await fetchMatrix(points);
+      const legs = await fetchMatrix(points, headers);
       return { provider: 'osm', leg: (i, j) => legs[i][j] };
     } catch (error) {
       console.warn(`OSRM unavailable (${error.message}); using local estimates`);

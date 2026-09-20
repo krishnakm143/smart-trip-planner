@@ -35,13 +35,10 @@ function rank(places, centre) {
     );
 }
 
-async function searchPlaces(destination, type) {
+async function searchPlaces(destination, type, headers) {
   const body = await fetchJson(OVERPASS_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'User-Agent': USER_AGENT,
-    },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...headers },
     body: new URLSearchParams({
       data: buildQuery(destination, type),
     }).toString(),
@@ -78,7 +75,7 @@ async function searchPlaces(destination, type) {
     }));
 }
 
-export function createOsmPlacesProvider({ fallback }) {
+export function createOsmPlacesProvider({ fallback, headers = { 'User-Agent': USER_AGENT } }) {
   // The public Overpass server allows only a few requests a minute, and places
   // change slowly, so successful answers are reused for an hour.
   const cache = new Map();
@@ -91,7 +88,7 @@ export function createOsmPlacesProvider({ fallback }) {
     }
 
     try {
-      const items = await searchPlaces(destination, type);
+      const items = await searchPlaces(destination, type, headers);
       if (items.length === 0) return fallback.discover(destination, type);
       cache.set(key, { items, expiresAt: Date.now() + CACHE_TTL_MS });
       return { provider: 'osm', items };

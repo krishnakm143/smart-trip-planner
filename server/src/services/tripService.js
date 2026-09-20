@@ -1,12 +1,10 @@
 import { Trip } from '../models/Trip.js';
 import { ApiError } from '../utils/ApiError.js';
+import { defaultTitle } from '../utils/tripTitle.js';
 import { buildPlan } from './plannerService.js';
 
 const DESTINATION_SUMMARY_FIELDS = 'name slug state heroImage';
 const DESTINATION_DETAIL_FIELDS = `${DESTINATION_SUMMARY_FIELDS} location`;
-
-export const defaultTitle = (days, destinationName) =>
-  `${days} ${days === 1 ? 'day' : 'days'} in ${destinationName}`;
 
 function toTripSummary(trip) {
   const { id, title, destination, startDate, endDate, days, travelers, budgetTier, status, budget } =
