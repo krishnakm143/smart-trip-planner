@@ -14,10 +14,13 @@ module.exports = (team) => {
   const numbered = (items) => { const ref = `num${numberedRefs.length + 1}`; numberedRefs.push(ref); body.push({ type: 'numbered', ref, items }); };
   const code = (lines) => body.push({ type: 'code', lines });
   const table = (caption, headers, widths, rows, fontSize) => body.push({ type: 'table', caption, headers, widths, rows, fontSize });
+  // Zero-width spaces let long camelCase / dotted identifiers wrap at sensible places in narrow columns.
+  const softBreak = (t) => (t.length > 13 ? t.replace(/([a-z])([A-Z])/g, '$1\u200B$2').replace(/\./g, '.\u200B') : t);
+  const ddTable = (caption, rows) => table(caption, DD_HEAD, DD_W, rows.map((r) => [softBreak(r[0]), softBreak(r[1]), ...r.slice(2)]));
   const figure = (file, caption, opts = {}) => body.push({ type: 'figure', file, caption, ...opts });
 
   const DD_HEAD = ['Field', 'Data Type', 'Size / Range', 'Constraints', 'Description'];
-  const DD_W = [17, 13, 17, 26, 27];
+  const DD_W = [19, 14, 16, 25, 26];
   const TS_ROWS = [
     ['createdAt', 'Date', 'ISO 8601 timestamp', 'Set automatically on insert (Mongoose timestamps)', 'Date and time the document was created'],
     ['updatedAt', 'Date', 'ISO 8601 timestamp', 'Set automatically on every update (Mongoose timestamps)', 'Date and time of the last modification'],
@@ -105,7 +108,7 @@ module.exports = (team) => {
   h2('1.6 Core Components');
   p('The application follows a three-tier architecture. The presentation tier is a React single-page application that runs in the browser. The application tier is a Node.js/Express REST API organised in layers — middleware, routes and controllers, services, Mongoose models and provider adapters. The data tier is a MongoDB database. External Google services are reached only through the provider adapters, so that the rest of the system does not depend on them. Figure 1.1 shows the architecture and Table 1.1 lists the modules.');
   figure('architecture.png', 'Figure 1.1: System Architecture of Smart Trip Planner', { landscape: true });
-  table('Table 1.1: Core Components (Modules) of the System', ['Module', 'Responsibility', 'Main elements'], [20, 45, 35], [
+  table('Table 1.1: Core Components (Modules) of the System', ['Module', 'Responsibility', 'Main elements'], [18, 38, 44], [
     ['Authentication', 'Registration, login, password hashing, issue and verification of JSON Web Tokens, session restore, protection of private routes.', '`authService`, `auth` middleware, `/auth/*` routes; `AuthContext`, `ProtectedRoute`, Login and Register pages'],
     ['Destination catalogue', 'Storage and retrieval of destinations; keyword search, category filter, pagination; destination details.', '`Destination` model, `destinationService`, `/destinations` routes; Home, Destinations and Destination Details pages'],
     ['Activity / Places', 'Places to visit and things to do at a destination with coordinates, duration, fee, rating and best time; discovery of nearby places.', '`Activity` model, `PlacesProvider`, `/destinations/:slug/discover` route'],
@@ -136,7 +139,7 @@ module.exports = (team) => {
     ['Docker Compose', 'Local infrastructure', 'Starts the MongoDB 7 container with one command so that every team member has the same database version.'],
     ['Git', 'Version control', 'Parallel work of the backend, frontend and documentation members with history and review.'],
     ['PlantUML', 'UML diagrams', 'Diagrams are kept as text sources under `docs/diagrams/src` and regenerated when the design changes.'],
-    ['Visual Studio Code', 'Editor', 'Free, cross-platform, with ESLint and Docker integration.'],
+    ['Code editor (e.g. Visual Studio Code)', 'Editing and debugging', 'Any editor with JavaScript and ESLint support can be used; no project file depends on a particular editor.'],
   ]);
 
   h2('1.8 Hardware and Software Requirements');
@@ -147,7 +150,7 @@ module.exports = (team) => {
     ['Operating system', 'Windows 10/11, macOS or a current Linux distribution'],
     ['Runtime', 'Node.js 20 or later with npm'],
     ['Database', 'MongoDB 7 — through Docker Desktop / Docker Compose (`mongo:7`), or a local MongoDB installation on port 27017'],
-    ['Tools', 'Git, Visual Studio Code (or any editor), a modern web browser with developer tools'],
+    ['Tools', 'Git, a code editor such as Visual Studio Code, a modern web browser with developer tools'],
     ['Network', 'Internet connection for installing packages; required at run time only when the Google providers are enabled'],
     ['Optional', 'Google Maps Platform API key (`GOOGLE_MAPS_API_KEY`) with Places API (New) and Distance Matrix API enabled'],
   ]);
@@ -187,7 +190,7 @@ module.exports = (team) => {
   h2('2.1 Functional Requirements');
   p('Functional requirements are grouped by module. All API paths are relative to the base path `/api/v1`; requests and responses are JSON. A successful response has the form `{ success: true, data, meta? }` and a failed response the form `{ success: false, error: { code, message, details? } }`.');
   const FR_HEAD = ['ID', 'Requirement', 'Input', 'Output / Behaviour'];
-  const FR_W = [9, 25, 28, 38];
+  const FR_W = [8, 20, 36, 36];
 
   h3('2.1.1 Authentication module');
   table('Table 2.1: Functional Requirements — Authentication', FR_HEAD, FR_W, [
@@ -201,8 +204,8 @@ module.exports = (team) => {
   table('Table 2.2: Functional Requirements — Destinations and Places', FR_HEAD, FR_W, [
     ['FR-05', 'Browse destinations', '`GET /destinations` with optional `page` (default 1) and `limit` (default 12, maximum 50)', 'Returns `{ items, total, page, limit }`; the client shows a grid of destination cards with image, state, category, tagline and rating.'],
     ['FR-06', 'Search and filter destinations', 'Query parameters `search` (keyword) and `category` (one of the seven categories)', 'Only matching destinations are returned; an empty result is shown as an explicit empty state.'],
-    ['FR-07', 'View destination details', '`GET /destinations/:slug`', 'Returns `{ destination, activities }`: overview, best season, ideal days, daily cost table for the three tiers and all activities. Unknown slug gives 404 `NOT_FOUND`.'],
-    ['FR-08', 'Discover nearby places', '`GET /destinations/:slug/discover` with optional `type`', 'Returns `{ items }` of discovered places (name, type, location, rating, address, source) and `meta.provider` (`local` or `google`) so that the interface can label the source.'],
+    ['FR-07', 'View destination details', '`GET` `/destinations/:slug`', 'Returns `{ destination, activities }`: overview, best season, ideal days, daily cost table for the three tiers and all activities. Unknown slug gives 404 `NOT_FOUND`.'],
+    ['FR-08', 'Discover nearby places', '`GET` `/destinations/:slug/discover` with optional `type`', 'Returns `{ items }` of discovered places (name, type, location, rating, address, source) and `meta.provider` (`local` or `google`) so that the interface can label the source.'],
   ]);
 
   h3('2.1.3 Trip planner, itinerary generator and budget estimator');
@@ -259,8 +262,7 @@ module.exports = (team) => {
 
   h2('3.1 Use Case Diagram');
   p('Figure 3.1 shows the use cases of Smart Trip Planner inside the system boundary. The primary actors are the Guest and the Registered Traveller. The Registered Traveller is a specialisation of the Guest and therefore inherits all guest use cases. The two Google services are secondary actors: they do not start any use case but take part in one when the Google providers are enabled.');
-  figure('use-case.png', 'Figure 3.1: Use Case Diagram', { maxH: 7.6 });
-  p('The relationships between use cases are read as follows. **Plan trip** always includes **Generate itinerary** and **Estimate budget**; the include arrows point from the base use case to the included ones. **Save trip** extends **Plan trip** at the point where the plan preview is shown, under the condition that the traveller is logged in; the extend arrow points from the extending use case to the base use case. If the traveller is not logged in, the client redirects to Login and restores the pending plan afterwards. **Search / filter destinations** extends **Browse destinations**, because the list is also usable without any filter.');
+  p('The relationships between use cases in the diagram are read as follows. **Plan trip** always includes **Generate itinerary** and **Estimate budget**; the include arrows point from the base use case to the included ones. **Save trip** extends **Plan trip** at the point where the plan preview is shown, under the condition that the traveller is logged in; the extend arrow points from the extending use case to the base use case. If the traveller is not logged in, the client redirects to Login and restores the pending plan afterwards. **Search / filter destinations** extends **Browse destinations**, because the list is also usable without any filter.');
   table('Table 3.1: Actors', ['Actor', 'Type', 'Description'], [24, 16, 60], [
     ['Guest (Visitor)', 'Primary', 'A person using the application without being logged in. Can browse, search, view details, discover places, plan a trip, register and log in.'],
     ['Registered Traveller', 'Primary', 'A logged-in user (role `traveler`). Inherits the guest use cases and can additionally save a trip and manage saved trips.'],
@@ -268,6 +270,7 @@ module.exports = (team) => {
     ['Google Distance Matrix API', 'Secondary (external system)', 'Supplies road distance and travel time between two stops for “Generate itinerary” when an API key is configured; otherwise the local haversine estimate is used.'],
   ]);
 
+  figure('use-case.png', 'Figure 3.1: Use Case Diagram', { maxH: 7.8 });
   const UC_W = [24, 76];
   const ucTable = (caption, rows) => table(caption, ['Item', 'Description'], UC_W, rows);
   h3('3.1.1 Use case descriptions');
@@ -380,20 +383,18 @@ module.exports = (team) => {
   h2('3.3 Interaction Diagram');
   p('Sequence diagrams show the messages exchanged between the traveller, the client objects (page, authentication context, API client), the server objects (middleware, controllers, services, providers) and the database. Solid arrows are calls, dashed arrows are returns.');
   h3('3.3.1 Generate plan preview');
+  p('In Figure 3.5 the `loop` fragment corresponds to the distance queries made while the days are being built. Inside it, the `alt` fragment shows the provider behaviour: when a Google key is configured and the Distance Matrix API answers within 4 seconds its values are used; in every other case the local haversine estimate is returned and the response is labelled with `provider = local`.');
   figure('sequence-plan-preview.png', 'Figure 3.5: Sequence Diagram — Generate Plan Preview', { maxH: 5.6 });
-  p('The `loop` fragment corresponds to the distance queries made while the days are being built. Inside it, the `alt` fragment shows the provider behaviour: when a Google key is configured and the Distance Matrix API answers within 4 seconds its values are used; in every other case the local haversine estimate is returned and the response is labelled with `provider = local`.');
   h3('3.3.2 Save trip');
+  p('In Figure 3.6 the `opt` fragment is executed only when the traveller is not logged in. The request to `/trips` carries the token in the `Authorization` header; the authentication middleware verifies it before the controller is reached. The trip service then loads the destination, regenerates the itinerary and the budget on the server and inserts the trip.');
   figure('sequence-save-trip.png', 'Figure 3.6: Sequence Diagram — Save Trip with JWT Authentication', { maxH: 5.0 });
-  p('The `opt` fragment is executed only when the traveller is not logged in. The request to `/trips` carries the token in the `Authorization` header; the authentication middleware verifies it before the controller is reached. The trip service then loads the destination, regenerates the itinerary and the budget on the server and inserts the trip.');
   h3('3.3.3 Login and session restore');
+  p('The upper part of Figure 3.7 shows both outcomes of a login attempt. The lower part shows what happens when the application is opened or reloaded: if a token is present in local storage, the authentication context calls `/auth/me`; a valid token restores the user, while an expired or invalid token leads to logout and a redirect to the Login page.');
   figure('sequence-login.png', 'Figure 3.7: Sequence Diagram — Login and Session Restore', { maxH: 8.0 });
-  p('The upper part shows both outcomes of a login attempt. The lower part shows what happens when the application is opened or reloaded: if a token is present in local storage, the authentication context calls `/auth/me`; a valid token restores the user, while an expired or invalid token leads to logout and a redirect to the Login page.');
 
   h2('3.4 Class Diagram');
-  p('The static structure is shown in two diagrams. Figure 3.8 contains the domain classes, which correspond to the four MongoDB collections and their embedded structures. Figure 3.9 contains the service classes of the application tier and the provider interfaces with their realisations.');
-  figure('class-diagram.png', 'Figure 3.8: Class Diagram — Domain Model', { maxH: 7.9 });
+  p('The static structure is shown in two diagrams, and Table 3.6 summarises the responsibility of every class. Figure 3.8 contains the domain classes, which correspond to the four MongoDB collections and their embedded structures. Figure 3.9 contains the service classes of the application tier and the provider interfaces with their realisations.');
   p('A User owns zero or more Trips and every Trip belongs to exactly one User. Many Trips can be planned for one Destination, and a Destination offers many Activities. Filled diamonds denote composition, i.e. embedded sub-documents that cannot exist without their parent: a Destination is composed of one DailyCost with three TierCost values (economy, standard, luxury) and one GeoPoint; a Trip is composed of 1 to 14 ItineraryDays, each composed of zero or more ItineraryItems, and of exactly one Budget. An ItineraryItem is a snapshot of an Activity: it copies name, type, location, duration and fee and keeps only a reference to the original, so that a saved trip stays unchanged if the catalogue is edited later.');
-  figure('class-diagram-services.png', 'Figure 3.9: Class Diagram — Services and Provider Interfaces', { landscape: true });
   table('Table 3.6: Class Responsibilities', ['Class', 'Kind', 'Responsibility'], [22, 16, 62], [
     ['User', 'Collection', 'Account of a traveller or maintainer: name, unique e-mail, password hash, role.'],
     ['Destination', 'Collection', 'A place that can be planned for: descriptive data, location, best season, ideal days, daily costs per tier, rating, tags.'],
@@ -411,12 +412,14 @@ module.exports = (team) => {
     ['RouteProvider', 'Interface', '`getLeg(from, to)` returns kilometres and minutes between two points. Realised by LocalRouteProvider (haversine × 1.3, 25 km/h) and GoogleRouteProvider (Distance Matrix API, 4 s timeout, fallback to local).'],
     ['PlacesProvider', 'Interface', '`discover(destination, type)` returns places of a destination. Realised by LocalPlacesProvider (activities collection) and GooglePlacesProvider (Places API text search, 4 s timeout, fallback to local).'],
   ]);
+  figure('class-diagram.png', 'Figure 3.8: Class Diagram — Domain Model', { maxH: 7.2 });
+  figure('class-diagram-services.png', 'Figure 3.9: Class Diagram — Services and Provider Interfaces', { landscape: true });
 
   h2('3.5 Data Dictionary');
   p('The database `smart_trip_planner` contains four collections: `users`, `destinations`, `activities` and `trips`. Every document has the primary key `_id` of type ObjectId generated by MongoDB, and the fields `createdAt` and `updatedAt` maintained by Mongoose. References between collections are stored as ObjectId values and are listed as foreign keys (FK). Money is stored in Indian Rupees as whole numbers. In the column Size / Range, “variable” means that the design does not impose a length limit. In JSON responses `_id` is returned as `id`, and the internal version key is removed.');
 
   h3('3.5.1 Collection: users');
-  table('Table 3.7: Data Dictionary — users', DD_HEAD, DD_W, [
+  ddTable('Table 3.7: Data Dictionary — users', [
     ['_id', 'ObjectId', '12 bytes (24 hexadecimal characters)', 'Primary key; generated automatically', 'Unique identifier of the user'],
     ['name', 'String', '2–60 characters', 'Required; trimmed', 'Display name'],
     ['email', 'String', 'Variable; valid e-mail format', 'Required; unique; stored in lower case', 'Login identifier'],
@@ -426,7 +429,7 @@ module.exports = (team) => {
   ]);
 
   h3('3.5.2 Collection: destinations');
-  table('Table 3.8: Data Dictionary — destinations', DD_HEAD, DD_W, [
+  ddTable('Table 3.8: Data Dictionary — destinations', [
     ['_id', 'ObjectId', '12 bytes', 'Primary key; generated automatically', 'Unique identifier of the destination'],
     ['name', 'String', 'Variable', 'Required', 'Name of the destination, e.g. “Manali”'],
     ['slug', 'String', 'Variable', 'Required; unique; lower case', 'Identifier used in URLs, e.g. `manali`'],
@@ -446,14 +449,14 @@ module.exports = (team) => {
     ['tags', 'Array of String', 'Variable', 'Optional', 'Keywords used by the search'],
     ...TS_ROWS,
   ]);
-  table('Table 3.9: Data Dictionary — dailyCost tier (embedded in destinations)', DD_HEAD, DD_W, [
+  ddTable('Table 3.9: Data Dictionary — dailyCost tier (embedded in destinations)', [
     ['stay', 'Number', 'Integer ≥ 0 (INR)', 'Required', 'Cost of one room for one night'],
     ['food', 'Number', 'Integer ≥ 0 (INR)', 'Required', 'Food cost per person per day'],
     ['transport', 'Number', 'Integer ≥ 0 (INR)', 'Required', 'Local transport cost per person per day'],
   ]);
 
   h3('3.5.3 Collection: activities');
-  table('Table 3.10: Data Dictionary — activities', DD_HEAD, DD_W, [
+  ddTable('Table 3.10: Data Dictionary — activities', [
     ['_id', 'ObjectId', '12 bytes', 'Primary key; generated automatically', 'Unique identifier of the activity'],
     ['destination', 'ObjectId', '12 bytes', 'Foreign key → `destinations._id`; required; indexed', 'Destination to which the activity belongs'],
     ['name', 'String', 'Variable', 'Required; unique together with `destination` (compound index)', 'Name of the place or activity, e.g. “Solang Valley”'],
@@ -471,7 +474,7 @@ module.exports = (team) => {
   ]);
 
   h3('3.5.4 Collection: trips');
-  table('Table 3.11: Data Dictionary — trips', DD_HEAD, DD_W, [
+  ddTable('Table 3.11: Data Dictionary — trips', [
     ['_id', 'ObjectId', '12 bytes', 'Primary key; generated automatically', 'Unique identifier of the trip'],
     ['user', 'ObjectId', '12 bytes', 'Foreign key → `users._id`; required; indexed', 'Owner of the trip'],
     ['destination', 'ObjectId', '12 bytes', 'Foreign key → `destinations._id`; required', 'Destination of the trip'],
@@ -491,7 +494,7 @@ module.exports = (team) => {
   ]);
 
   h3('3.5.5 Embedded structure: itineraryDay');
-  table('Table 3.12: Data Dictionary — itineraryDay (embedded in trips.itinerary)', DD_HEAD, DD_W, [
+  ddTable('Table 3.12: Data Dictionary — itineraryDay (embedded in trips.itinerary)', [
     ['day', 'Number', '1 to `days`', 'Integer', 'Sequence number of the day'],
     ['date', 'Date', 'Calendar date', '`startDate` + (day − 1)', 'Calendar date of the day'],
     ['items', 'Array of ItineraryItem', '0 or more', 'Embedded; structure in Table 3.13; empty on a free day', 'Ordered stops of the day'],
@@ -502,7 +505,7 @@ module.exports = (team) => {
 
   h3('3.5.6 Embedded structure: itineraryItem');
   p('An itinerary item is a snapshot of the activity at the time the plan was generated, so that a saved trip remains stable if the activity is changed or removed later.');
-  table('Table 3.13: Data Dictionary — itineraryItem (embedded in itineraryDay.items)', DD_HEAD, DD_W, [
+  ddTable('Table 3.13: Data Dictionary — itineraryItem (embedded in itineraryDay.items)', [
     ['activity', 'ObjectId', '12 bytes', 'Foreign key → `activities._id` (reference only)', 'Activity from which the snapshot was taken'],
     ['name', 'String', 'Variable', 'Copied from the activity', 'Name of the stop'],
     ['type', 'String', 'Enumeration', 'Activity `type` enumeration', 'Type of the stop'],
@@ -512,12 +515,12 @@ module.exports = (team) => {
     ['endTime', 'String', '5 characters, `HH:mm`', '`startTime` + `durationHours`', 'Scheduled end of the visit'],
     ['durationHours', 'Number', '0.5–8', 'Copied from the activity', 'Visit time in hours'],
     ['entryFee', 'Number', 'Integer ≥ 0 (INR)', 'Copied from the activity', 'Entry fee per person'],
-    ['travelKmFromPrev', 'Number', '≥ 0', 'From `RouteProvider.getLeg`; 0 for the first stop of a day', 'Distance from the previous stop in km'],
-    ['travelMinutesFromPrev', 'Number', '≥ 0', 'From `RouteProvider.getLeg`; 0 for the first stop of a day', 'Travel time from the previous stop in minutes'],
+    ['travelKmFromPrev', 'Number', '≥ 0', 'Leg distance returned by the RouteProvider; 0 for the first stop of a day', 'Distance from the previous stop in km'],
+    ['travelMinutesFromPrev', 'Number', '≥ 0', 'Leg duration returned by the RouteProvider; 0 for the first stop of a day', 'Travel time from the previous stop in minutes'],
   ]);
 
   h3('3.5.7 Embedded structure: budget');
-  table('Table 3.14: Data Dictionary — budget (embedded in trips.budget)', DD_HEAD, DD_W, [
+  ddTable('Table 3.14: Data Dictionary — budget (embedded in trips.budget)', [
     ['tier', 'String', 'Enumeration', 'Enum: `economy`, `standard`, `luxury`', 'Tier used for the estimate'],
     ['currency', 'String', '3 characters', 'Constant `INR`', 'Currency of all amounts'],
     ['rooms', 'Number', '1–6', 'Derived: ceil(travelers / 2)', 'Number of rooms'],
@@ -540,7 +543,7 @@ module.exports = (team) => {
   ]);
 
   h3('3.5.9 Budget computation');
-  p('The budget is computed by the pure function `estimateBudget({ dailyCost, tier, days, travelers, activityFeesPerPerson })` of `budgetService`. `activityFeesPerPerson` is the sum of the entry fees of all scheduled itinerary items; for the quick estimate (FR-12) it is 0.');
+  p('The budget is computed by the pure function `estimateBudget` of `budgetService`. It receives the daily cost table of the destination, the tier, the number of days, the number of travellers and the activity fees per person, and has no side effects, which makes it easy to unit-test. The activity fees per person are the sum of the entry fees of all scheduled itinerary items; for the quick estimate (FR-12) they are 0.');
   code([
     'nights     = max(days - 1, 1)',
     'rooms      = ceil(travelers / 2)',
@@ -551,7 +554,7 @@ module.exports = (team) => {
     'total      = stay + food + transport + activities',
     'perPerson  = round(total / travelers)',
   ]);
-  p('**Worked example.** The demonstration plan is a trip to Manali of 4 days for 2 travellers in the standard tier. The seeded standard-tier daily cost of Manali is Rs. 3,000 per room per night for stay, Rs. 900 per person per day for food and Rs. 900 per person per day for transport. For the illustration it is assumed that the entry fees of the scheduled activities add up to Rs. 1,300 per person; the actual figure depends on the generated itinerary.');
+  p('**Worked example.** The demonstration plan is a trip to Manali of 4 days for 2 travellers in the standard tier. The seeded standard-tier daily cost of Manali is Rs. 3,000 per room per night for stay, Rs. 900 per person per day for food and Rs. 900 per person per day for transport. For the illustration it is assumed that the entry fees of the scheduled activities add up to Rs. 1,300 per person; the actual figure depends on the generated itinerary. With three travellers instead of two, the number of rooms would become ceil(3 / 2) = 2, which doubles the stay component.');
   table('Table 3.16: Worked Budget Example (Manali, 4 days, 2 travellers, standard tier)', ['Quantity', 'Computation', 'Result'], [24, 50, 26], [
     ['nights', 'max(4 − 1, 1)', '3'],
     ['rooms', 'ceil(2 / 2)', '1'],
@@ -562,7 +565,6 @@ module.exports = (team) => {
     ['**total**', '9,000 + 7,200 + 7,200 + 2,600', '**Rs. 26,000**'],
     ['**perPerson**', 'round(26,000 / 2)', '**Rs. 13,000**'],
   ]);
-  p('If the same trip were planned for three travellers, the number of rooms would become ceil(3 / 2) = 2, so the stay component would double while food and transport would grow in proportion to the number of travellers. This behaviour follows directly from the assumption that two travellers share a room.');
 
   return { body, numberedRefs };
 };

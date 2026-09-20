@@ -22,8 +22,7 @@ const { execFileSync } = require('child_process');
 const {
   Document, Packer, Paragraph, TextRun, ImageRun, Table, TableRow, TableCell, Header, Footer,
   AlignmentType, HeadingLevel, WidthType, ShadingType, BorderStyle, PageNumber, NumberFormat,
-  PageOrientation, LevelFormat, VerticalAlign, LineRuleType, PositionalTab,
-  PositionalTabAlignment, PositionalTabRelativeTo, PositionalTabLeader, SectionType,
+  PageOrientation, LevelFormat, VerticalAlign, LineRuleType, TabStopType, LeaderType, SectionType,
 } = require('docx');
 
 const DOCS = path.resolve(__dirname, '..');
@@ -38,6 +37,7 @@ const MONO = 'Courier New';
 const A4 = { width: 11906, height: 16838 };
 const MARGIN = 1440;
 const TEXT_W = A4.width - 2 * MARGIN; // 9026
+const TEXT_W_LANDSCAPE = A4.height - 2 * MARGIN; // 13958
 const PORTRAIT_IMG = { w: 6.2, h: 8.3 }; // inches available for a figure
 const LANDSCAPE_IMG = { w: 9.6, h: 5.2 };
 const BODY = { size: 24, font: FONT }; // 12 pt
@@ -88,7 +88,7 @@ const heading = (level, text) => new Paragraph({
 
 const listItem = (text, ref) => new Paragraph({
   numbering: { reference: ref, level: 0 },
-  alignment: AlignmentType.JUSTIFIED,
+  alignment: AlignmentType.LEFT, // LibreOffice lets justified hanging-indent lines overrun the margin
   spacing: { ...LINE_15, after: 60 },
   children: runs(text, { size: BODY.size }),
 });
@@ -166,17 +166,8 @@ function figure({ file, caption: cap, landscape, maxH }) {
 const tocLine = (text, page, { indent = 0, bold = false } = {}) => new Paragraph({
   spacing: { line: 300, lineRule: LineRuleType.AUTO, after: 40 },
   indent: { left: indent },
-  children: [
-    new TextRun({ text, font: FONT, size: BODY.size, bold }),
-    new TextRun({
-      font: FONT, size: BODY.size, bold,
-      children: [new PositionalTab({
-        alignment: PositionalTabAlignment.RIGHT,
-        relativeTo: PositionalTabRelativeTo.MARGIN,
-        leader: PositionalTabLeader.DOT,
-      }), String(page)],
-    }),
-  ],
+  tabStops: [{ type: TabStopType.RIGHT, position: TEXT_W, leader: LeaderType.DOT }],
+  children: [new TextRun({ text: `${text}\t${page}`, font: FONT, size: BODY.size, bold })],
 });
 
 const frontHeading = (text) => new Paragraph({
@@ -187,36 +178,27 @@ const frontHeading = (text) => new Paragraph({
 });
 
 /* ---------- header / footer ---------- */
-const makeHeader = () => new Header({
+const rightTab = (landscape) => [{ type: TabStopType.RIGHT, position: landscape ? TEXT_W_LANDSCAPE : TEXT_W }];
+
+const makeHeader = (landscape) => new Header({
   children: [new Paragraph({
+    tabStops: rightTab(landscape),
     border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '555555', space: 4 } },
     children: [
       new TextRun({ text: team.projectTitle, font: FONT, size: 20, bold: true }),
-      new TextRun({
-        font: FONT, size: 20,
-        children: [new PositionalTab({
-          alignment: PositionalTabAlignment.RIGHT,
-          relativeTo: PositionalTabRelativeTo.MARGIN,
-          leader: PositionalTabLeader.NONE,
-        }), 'Project Document — Presentation 1'],
-      }),
+      new TextRun({ text: '\tProject Document \u2014 Presentation 1', font: FONT, size: 20 }),
     ],
   })],
 });
 
-const makeFooter = () => new Footer({
+const makeFooter = (landscape) => new Footer({
   children: [new Paragraph({
+    style: 'FooterText',
+    tabStops: rightTab(landscape),
     border: { top: { style: BorderStyle.SINGLE, size: 6, color: '555555', space: 4 } },
     children: [
-      new TextRun({ text: 'SVIT, Vasad — MCA Semester III', font: FONT, size: 20 }),
-      new TextRun({
-        font: FONT, size: 20,
-        children: [new PositionalTab({
-          alignment: PositionalTabAlignment.RIGHT,
-          relativeTo: PositionalTabRelativeTo.MARGIN,
-          leader: PositionalTabLeader.NONE,
-        }), 'Page ', PageNumber.CURRENT],
-      }),
+      new TextRun({ text: 'SVIT, Vasad \u2014 MCA Semester III\tPage ', font: FONT, size: 20 }),
+      new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 20 }),
     ],
   })],
 });
@@ -338,6 +320,7 @@ function build(pages) {
         { id: 'Heading2', name: 'Heading 2', basedOn: 'Normal', next: 'Normal', quickFormat: true,
           run: { font: FONT, size: 28, bold: true, color: '000000' },
           paragraph: { spacing: { before: 320, after: 160 }, outlineLevel: 1 } },
+        { id: 'FooterText', name: 'Footer Text', basedOn: 'Normal', run: { font: FONT, size: 20 } },
         { id: 'Heading3', name: 'Heading 3', basedOn: 'Normal', next: 'Normal', quickFormat: true,
           run: { font: FONT, size: 24, bold: true, color: '000000' },
           paragraph: { spacing: { before: 240, after: 120 }, outlineLevel: 2 } },
@@ -354,10 +337,10 @@ function build(pages) {
     sections: [
       { properties: pageProps(false), children: titlePage() },
       { properties: { type: SectionType.NEXT_PAGE, ...pageProps(false, { pageNumbers: { start: 1, formatType: NumberFormat.LOWER_ROMAN } }) },
-        headers: { default: makeHeader() }, footers: { default: makeFooter() }, children: front },
+        headers: { default: makeHeader(false) }, footers: { default: makeFooter(false) }, children: front },
       ...bodySections.map((s, i) => ({
         properties: { type: SectionType.NEXT_PAGE, ...pageProps(s.landscape, i === 0 ? { pageNumbers: { start: 1, formatType: NumberFormat.DECIMAL } } : { pageNumbers: { formatType: NumberFormat.DECIMAL } }) },
-        headers: { default: makeHeader() }, footers: { default: makeFooter() }, children: s.children,
+        headers: { default: makeHeader(s.landscape) }, footers: { default: makeFooter(s.landscape) }, children: s.children,
       })),
     ],
   });
