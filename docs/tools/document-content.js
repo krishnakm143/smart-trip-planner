@@ -49,7 +49,7 @@ module.exports = (team) => {
     });
   };
   const recordsTable = (caption, headers, widths, rows) =>
-    body.push({ type: 'table', caption, style: 'dd', headers, widths, rows: rows.map((r) => r.map(String)), fontSize: 17 });
+    body.push({ type: 'table', caption, style: 'dd', headers, widths, rows: rows.map((r) => r.map(String)), fontSize: 18 }); // 9 pt
   const figure = (file, caption, opts = {}) => body.push({ type: 'figure', file, caption, ...opts });
   const DD_HEAD = ['Field name', 'Datatype', 'Len', 'Constrains', 'Description'];
   const DD_W = [20, 14, 7, 30, 29];
@@ -151,7 +151,7 @@ module.exports = (team) => {
     ['Provider adapters', 'Uniform interfaces for route and place data with a local implementation and OpenStreetMap and Google implementations that fall back to local on failure.', '`providers/` (local, osm, google, `index.js`)'],
   ]);
 
-  h2('1.7 Development Tools and Technologies');
+  h2('1.7 Development Tools & Technologies');
   p('Table 1.2 lists the technologies used. Versions are the major versions recorded in the project’s `package.json` files and `docker-compose.yml`.');
   table('Table 1.2: Development Tools and Technologies', ['Technology', 'Version / Role', 'Reason for selection'], [22, 30, 48], [
     ['HTML5, CSS3, JavaScript (ES modules)', 'Languages of the client and the server', 'One language across both tiers reduces context switching for a three-member team; hand-written CSS with design tokens keeps the bundle small and avoids dependence on a UI kit.'],
@@ -303,7 +303,7 @@ module.exports = (team) => {
     ['Route API (OSRM or Google Distance Matrix)', 'Secondary (external system)', 'Supplies road distance and travel time between stops for “Generate itinerary” when a remote provider is configured; otherwise the local haversine estimate is used.'],
   ]);
 
-  figure('use-case.png', 'Figure 3.1: Use Case Diagram', { maxH: 7.8 });
+  figure('use-case.png', 'Figure 3.1: Use Case Diagram', { maxH: 7.0 });
   const UC_W = [24, 76];
   const ucTable = (caption, rows) => table(caption, ['Item', 'Description'], UC_W, rows);
   h3('3.1.1 Use case descriptions');
@@ -394,7 +394,7 @@ module.exports = (team) => {
   h2('3.2 Activity Diagram');
   p('The central work flow of the application — from choosing a destination to opening the saved trip — is modelled with swimlanes for the Traveller, the React client, the Express API and the data/provider layer. For legibility on an A4 page the flow is drawn in two parts: Figure 3.2 ends when the plan preview is shown, and Figure 3.3 continues from that point with saving the trip.');
   h3('3.2.1 Plan trip and save trip');
-  figure('activity-plan-trip-part1-preview.png', 'Figure 3.2: Activity Diagram — Plan Trip, Part 1 (Generate Plan Preview)');
+  figure('activity-plan-trip-part1-preview.png', 'Figure 3.2: Activity Diagram — Plan Trip, Part 1 (Generate Plan Preview)', { maxH: 7.4 });
   p('Part 1 contains two decisions on input validity. The first is taken in the client, which returns to the form with field errors; the second is taken by the API, because the server never relies on client-side checks. The loop “More days?” represents step 3 of the itinerary algorithm described in Section 3.2.3.');
   figure('activity-plan-trip-part2-save.png', 'Figure 3.3: Activity Diagram — Plan Trip, Part 2 (Save Trip)', { maxH: 6.0 });
   p('Part 2 shows the decision “Logged in?”. On the negative branch the plan input is kept in session storage, the traveller logs in or registers, and the preview is restored, after which both branches merge at the request `POST /trips`. The API regenerates the plan before inserting the trip.');
@@ -568,10 +568,10 @@ module.exports = (team) => {
 
   h3('3.5.8 Sample records');
   p('Tables 3.15 to 3.18 list five records of each collection as stored in the development database after `npm run seed`. Long fields (descriptions, the embedded itinerary and the full password hash) are left out so that the records fit the page; every sample account uses the demonstration password and each one is hashed with its own salt.');
-  recordsTable('Table 3.15: Sample Records — users', ['_id', 'name', 'email', 'passwordHash', 'role'], [25, 17, 27, 18, 13], records.users);
+  recordsTable('Table 3.15: Sample Records — users', ['_id', 'name', 'email', 'passwordHash', 'role'], [25, 16, 26, 20, 13], records.users);
   recordsTable('Table 3.16: Sample Records — destinations', ['name', 'slug', 'state', 'category', 'bestSeason', 'ideal Days', 'standard stay (INR)', 'rating'], [12, 12, 15, 13, 19, 9, 12, 8], records.destinations);
   recordsTable('Table 3.17: Sample Records — activities (destination: Manali)', ['name', 'type', 'location (lat, lng)', 'duration Hours', 'entry Fee', 'rating', 'best Time', 'source'], [22, 12, 20, 10, 8, 8, 10, 10], records.activities);
-  recordsTable('Table 3.18: Sample Records — trips', ['title', 'user', 'start Date', 'end Date', 'days', 'travelers', 'budget Tier', 'pace', 'status', 'budget .total'], [15, 13, 11, 11, 6, 10, 10, 10, 10, 9], records.trips);
+  recordsTable('Table 3.18: Sample Records — trips', ['title', 'user', 'start Date', 'end Date', 'days', 'travelers', 'budget Tier', 'pace', 'status', 'budget .total'], [13, 11, 12.5, 12.5, 6, 10.5, 10, 10, 9.5, 8], records.trips);
 
   h3('3.5.9 Relationships and indexes');
   table('Table 3.19: Relationships and Indexes', ['Collection', 'Key / index', 'Purpose'], [20, 38, 42], [
@@ -606,5 +606,22 @@ module.exports = (team) => {
     ['**perPerson**', 'round(26,000 / 2)', '**Rs. 13,000**'],
   ]);
 
-  return { body, numberedRefs };
+  /* ------------------------------------------------------------------ */
+  /* Front matter (Acknowledgement and Abstract) — plain paragraphs.     */
+  const guide = team.guide;
+  const front = {
+    acknowledgement: [
+      `We would like to express our sincere gratitude to everyone who supported and guided us during the development of our project, **“${team.projectTitle}”**.`,
+      `First and foremost, we are thankful to our project guide, **${guide}**, for her valuable guidance, continuous support, constructive suggestions and encouragement at every stage of the work. Her feedback helped us to understand the requirements clearly and to shape the analysis and design presented in this report.`,
+      'We are also thankful to the faculty members of the **Department of Master of Computer Applications** and to **Sardar Vallabhbhai Patel Institute of Technology (SVIT), Vasad**, for providing the facilities, the resources and the learning environment required to carry out this project.',
+      'We are grateful to our friends and classmates for their suggestions during the development and testing of the system, and to our parents and family members for their constant support and motivation throughout our studies.',
+      'Finally, each of us acknowledges the cooperation of the other team members in the areas of backend and database development, frontend development, UML modelling and documentation.',
+    ],
+    abstract: [
+      `**${team.projectTitle}** is a web application that helps a traveller plan a trip to an Indian destination in a single step. The traveller selects one of the 12 catalogued destinations, enters the travel dates, the number of travellers, a budget tier (economy, standard or luxury), the interests of the group and the preferred pace, and the system returns a day-wise itinerary and an estimated budget. The itinerary is generated deterministically: the activities of the destination are scored by rating and interest match, each day is filled up to the number of sightseeing hours allowed by the pace, consecutive stops are chosen by a nearest-neighbour rule so that travel between them stays short, and every stop receives a start and an end time. The budget is computed with a transparent formula and is divided into stay, food, local transport and activity fees, with the total and the per-person amount in Indian Rupees. A plan can be previewed without an account; a registered traveller can save it to My Trips, view it later, add notes, change its status or delete it, and can access only his or her own trips. The system is built with React.js on the client, a Node.js and Express.js REST API secured with JSON Web Tokens, bcrypt password hashing and input validation on the server, and MongoDB with Mongoose for storage. Places and road distances are obtained through replaceable provider adapters for OpenStreetMap (Overpass and OSRM) and, optionally, Google Places and Distance Matrix, with a local fallback so that the application remains fully functional without any external service. This report covers the introduction, the requirement determination and analysis, and the system design of the project, including the use case, activity, interaction and class diagrams and the data dictionary.`,
+      '**Keywords:** trip planning, itinerary generation, budget estimation, nearest-neighbour heuristic, MERN stack, REST API, JSON Web Token, MongoDB, OpenStreetMap.',
+    ],
+  };
+
+  return { body, numberedRefs, front };
 };

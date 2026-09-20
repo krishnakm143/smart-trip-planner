@@ -61,6 +61,14 @@ function dotList(slide, items, x, y, w, step, o = {}) {
   text(s, "A web application that turns a destination, travel dates and a budget tier into a day-wise itinerary and a cost estimate.",
     MX, 2.5, 8.2, 0.8, { fontSize: 17, color: C.onDarkMuted });
 
+  // Institute emblem on a white tile (its lettering is black, the slide is dark).
+  const logoFile = path.join(__dirname, "assets", "svit-logo.png");
+  if (fs.existsSync(logoFile)) {
+    const tile = 1.5, lx = W - MX - tile, ly = 0.55, inset = 0.12;
+    panel(pres, s, lx, ly, tile, tile, { fill: "FFFFFF", line: null });
+    s.addImage({ path: logoFile, x: lx + inset, y: ly + inset, w: tile - inset * 2, h: (tile - inset * 2) * (385 / 395), altText: "SVIT logo" });
+  }
+
   // Route motif: the four things the product does, as stops on a journey.
   const stops = ["Destination", "Day-wise itinerary", "Budget estimate", "My Trips"];
   const rx = MX + 0.23, rGap = 2.55, ry = 3.85;
@@ -82,9 +90,11 @@ function dotList(slide, items, x, y, w, step, o = {}) {
 
   // Guide / team / date
   const gx = 9.35, gw = W - MX - gx;
-  const facts = [["GUIDED BY", team.guide], ["TEAM", team.teamNo], ["PRESENTATION-1", team.presentationDate]];
+  // The team number is shown only once it is known (never as a placeholder).
+  const hasTeamNo = team.teamNo && !/\[\[/.test(team.teamNo);
+  const facts = [["GUIDED BY", team.guide], ...(hasTeamNo ? [["TEAM", team.teamNo]] : []), ["PRESENTATION-1", team.presentationDate]];
   facts.forEach(([k, v], i) => {
-    const y = ty + i * 0.56;
+    const y = ty + i * (hasTeamNo ? 0.56 : 0.72);
     text(s, k, gx, y, gw, 0.22, { fontSize: 10, bold: true, color: C.onDarkMuted, charSpacing: 3 });
     text(s, rich(v, { fontSize: 14, color: C.onDark }), gx, y + 0.23, gw, 0.3, {});
   });
@@ -238,7 +248,7 @@ function dotList(slide, items, x, y, w, step, o = {}) {
     { text: "produce a feasible day-wise itinerary that keeps travel between stops low, together with a transparent cost estimate", options: { color: C.accent } },
     { text: " — in one step, and keep it for later.", options: {} },
   ], MX, 2.0, 6.3, 3.4, { fontFace: SERIF, fontSize: 24, lineSpacingMultiple: 1.18 });
-  text(s, "Feasible = visit time + travel time fits the day: 6 h relaxed, 8 h balanced, 10 h packed.",
+  text(s, "Feasible = visit time + travel time fits the day: 6 h relaxed, 8 h balanced, 10\u00A0h\u00A0packed.",
     MX, 5.55, 6.3, 0.7, { fontSize: 13.5, color: C.muted });
 
   const px = 7.75, pw = W - MX - px;
@@ -572,12 +582,12 @@ diagramSlide({
     ["20 / 15 min", "auth requests allowed per IP"],
     ["Node 20+", "and MongoDB 7 to run the system"],
   ];
-  const tg = 0.25, tw = (gw - tg) / 2, th = 1.15;
+  const tg = 0.2, tw = (gw - tg) / 2, th = 1.25;
   tiles.forEach(([big, label], i) => {
     const x = gx + (i % 2) * (tw + tg), y = 2.55 + Math.floor(i / 2) * (th + tg);
     panel(pres, s, x, y, tw, th);
-    text(s, big, x + 0.22, y + 0.12, tw - 0.44, 0.55, { fontFace: SERIF, fontSize: 24, color: C.accent, valign: "middle" });
-    text(s, label, x + 0.22, y + 0.7, tw - 0.44, 0.4, { fontSize: 11.5, color: C.inkSoft });
+    text(s, big, x + 0.22, y + 0.08, tw - 0.44, 0.55, { fontFace: SERIF, fontSize: 24, color: C.accent, valign: "middle" });
+    text(s, label, x + 0.22, y + 0.64, tw - 0.44, 0.5, { fontSize: 11.5, color: C.inkSoft });
   });
 }
 
@@ -1015,7 +1025,7 @@ const mono = (t) => ({ text: t, mono: true, bold: true });
     ["Save", "Save → asked to log in → register → plan restored → Save → Trip Details."],
     ["Manage", "My Trips shows the trip: mark completed, add notes, delete."],
   ];
-  const gap = 0.3, cw = (CW - gap * 2) / 3, ch = 1.75, rows = [2.3, 4.75];
+  const gap = 0.3, cw = (CW - gap * 2) / 3, ch = 1.6, rows = [2.25, 4.55];
   // route: along row 1, down the right side, back along row 2 is drawn as two straight legs
   route(pres, s, MX + 0.23, rows[0], MX + 2 * (cw + gap) + 0.23, rows[0]);
   route(pres, s, MX + 0.23, rows[1], MX + 2 * (cw + gap) + 0.23, rows[1]);

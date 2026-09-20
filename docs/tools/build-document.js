@@ -9,10 +9,16 @@
  * Outputs: docs/Smart_Trip_Planner_Project_Document.docx
  *          docs/Smart_Trip_Planner_Project_Document.pdf   (needs LibreOffice `soffice`)
  *
- * The table of contents, list of figures and list of tables are static text so that they
- * render identically in Word, LibreOffice and PDF. Page numbers are resolved in two passes:
- * pass 1 builds the document with placeholder numbers, converts it to PDF and reads the page
- * of every heading/caption with `pdftotext`; pass 2 rebuilds with the real numbers.
+ * Format: SVIT MCA Sem-III project guidelines 2026-27 (A4, 1" margins, Times New Roman,
+ * headings 16/14/12 pt bold, body 10 pt, single spacing, header = project title, footer =
+ * enrollment numbers + page number, roman page numbers before Chapter 1) and, where the
+ * guidelines are silent, the department's reference report. Front matter: title page
+ * (Annexure-2) -> Acknowledgement -> Abstract -> INDEX (CH.NO | CONTENT | PAGE NO).
+ *
+ * The INDEX is a static table so that it renders identically in Word, LibreOffice and PDF.
+ * Page numbers are resolved in two passes: pass 1 builds the document with placeholder
+ * numbers, converts it to PDF and reads the page of every heading with `pdftotext`;
+ * pass 2 rebuilds with the real numbers.
  * Anything written as [[LIKE THIS]] is an unfilled placeholder and is highlighted in yellow.
  */
 const fs = require('fs');
@@ -22,7 +28,8 @@ const { execFileSync } = require('child_process');
 const {
   Document, Packer, Paragraph, TextRun, ImageRun, Table, TableRow, TableCell, Header, Footer,
   AlignmentType, HeadingLevel, WidthType, ShadingType, BorderStyle, PageNumber, NumberFormat,
-  PageOrientation, LevelFormat, VerticalAlign, LineRuleType, TabStopType, LeaderType, SectionType,
+  PageOrientation, LevelFormat, VerticalAlign, LineRuleType, TabStopType, SectionType,
+  PageBorderDisplay, PageBorderOffsetFrom, PageBorderZOrder,
 } = require('docx');
 
 const DOCS = path.resolve(__dirname, '..');
@@ -40,8 +47,9 @@ const TEXT_W = A4.width - 2 * MARGIN; // 9026
 const TEXT_W_LANDSCAPE = A4.height - 2 * MARGIN; // 13958
 const PORTRAIT_IMG = { w: 6.2, h: 8.3 }; // inches available for a figure
 const LANDSCAPE_IMG = { w: 9.6, h: 5.2 };
-const BODY = { size: 24, font: FONT }; // 12 pt
-const LINE_15 = { line: 360, lineRule: LineRuleType.AUTO };
+const BODY = { size: 20, font: FONT }; // 10 pt (guidelines)
+const SINGLE = { line: 240, lineRule: LineRuleType.AUTO }; // single line spacing (guidelines)
+const TABLE_SIZE = 20; // 10 pt; sample-record tables pass their own (9 pt)
 const ACCENT_FILL = 'DCE9EC';
 const BORDER = { style: BorderStyle.SINGLE, size: 4, color: '555555' };
 const BORDERS = { top: BORDER, bottom: BORDER, left: BORDER, right: BORDER };
@@ -73,7 +81,7 @@ function runs(text, base = {}) {
 /* ---------- block builders ---------- */
 const para = (text, opts = {}) => new Paragraph({
   alignment: opts.align || AlignmentType.JUSTIFIED,
-  spacing: { ...LINE_15, after: opts.after ?? 160, before: opts.before ?? 0 },
+  spacing: { ...SINGLE, after: opts.after ?? 120, before: opts.before ?? 0 },
   indent: opts.indent,
   keepNext: opts.keepNext,
   children: runs(text, { size: BODY.size, ...(opts.run || {}) }),
@@ -89,39 +97,39 @@ const heading = (level, text) => new Paragraph({
 const listItem = (text, ref) => new Paragraph({
   numbering: { reference: ref, level: 0 },
   alignment: AlignmentType.LEFT, // LibreOffice lets justified hanging-indent lines overrun the margin
-  spacing: { ...LINE_15, after: 60 },
+  spacing: { ...SINGLE, after: 50 },
   children: runs(text, { size: BODY.size }),
 });
 
 const codeBlock = (lines) => lines.map((l, i) => new Paragraph({
   alignment: AlignmentType.LEFT,
-  spacing: { line: 260, lineRule: LineRuleType.AUTO, after: i === lines.length - 1 ? 200 : 0 },
+  spacing: { line: 240, lineRule: LineRuleType.AUTO, after: i === lines.length - 1 ? 160 : 0 },
   indent: { left: 567 },
   keepNext: i < lines.length - 1,
   shading: { type: ShadingType.CLEAR, fill: 'F2F2F2', color: 'auto' },
-  children: [new TextRun({ text: l || ' ', font: MONO, size: 19 })],
+  children: [new TextRun({ text: l || ' ', font: MONO, size: 17 })],
 }));
 
 const caption = (text, opts = {}) => new Paragraph({
   alignment: AlignmentType.CENTER,
-  spacing: { before: opts.before ?? 80, after: opts.after ?? 200 },
+  spacing: { before: opts.before ?? 80, after: opts.after ?? 160 },
   keepNext: opts.keepNext,
-  children: [new TextRun({ text, font: FONT, size: 22, bold: true })],
+  children: [new TextRun({ text, font: FONT, size: 20, bold: true })],
 });
 
 const DD_HEADER_FILL = '4BACC6';
 
-function cell(text, width, { header = false, size = 20, dd = false } = {}) {
+function cell(text, width, { header = false, size = TABLE_SIZE, dd = false } = {}) {
   const lines = Array.isArray(text) ? text : [String(text)];
   return new TableCell({
     width: { size: width, type: WidthType.DXA },
     borders: BORDERS,
     verticalAlign: header || dd ? VerticalAlign.CENTER : VerticalAlign.TOP,
     shading: header ? { type: ShadingType.CLEAR, fill: dd ? DD_HEADER_FILL : ACCENT_FILL, color: 'auto' } : undefined,
-    margins: { top: 50, bottom: 50, left: 90, right: 90 },
+    margins: size < TABLE_SIZE ? { top: 40, bottom: 40, left: 60, right: 60 } : { top: 40, bottom: 40, left: 90, right: 90 },
     children: lines.map((l) => new Paragraph({
       alignment: dd ? AlignmentType.CENTER : AlignmentType.LEFT,
-      spacing: { line: 250, lineRule: LineRuleType.AUTO, after: lines.length > 1 ? 40 : 0 },
+      spacing: { line: 240, lineRule: LineRuleType.AUTO, after: lines.length > 1 ? 20 : 0 },
       children: runs(l, { size, bold: header, color: header && dd ? 'FFFFFF' : undefined }),
     })),
   });
@@ -132,7 +140,7 @@ function table({ headers, rows, widths, fontSize, style }, pageW = TEXT_W) {
   const sum = widths.reduce((a, b) => a + b, 0);
   const w = widths.map((x) => Math.round((x / sum) * pageW));
   w[w.length - 1] += pageW - w.reduce((a, b) => a + b, 0);
-  const size = fontSize || 20;
+  const size = fontSize || TABLE_SIZE;
   return new Table({
     width: { size: pageW, type: WidthType.DXA },
     columnWidths: w,
@@ -165,32 +173,64 @@ function figure({ file, caption: cap, landscape, maxH }) {
   ];
 }
 
-/* ---------- static TOC-style line with dot leader ---------- */
-const tocLine = (text, page, { indent = 0, bold = false } = {}) => new Paragraph({
-  spacing: { line: 300, lineRule: LineRuleType.AUTO, after: 40 },
-  indent: { left: indent },
-  tabStops: [{ type: TabStopType.RIGHT, position: TEXT_W, leader: LeaderType.DOT }],
-  children: [new TextRun({ text: `${text}\t${page}`, font: FONT, size: BODY.size, bold })],
-});
-
-const frontHeading = (text) => new Paragraph({
+/* ---------- front matter: headings and the INDEX table ---------- */
+const frontHeading = (text, { pageBreak = true } = {}) => new Paragraph({
   alignment: AlignmentType.CENTER,
-  pageBreakBefore: true,
-  spacing: { after: 300 },
+  pageBreakBefore: pageBreak,
+  spacing: { after: 280 },
   children: [new TextRun({ text, font: FONT, size: 32, bold: true })],
 });
 
-/* ---------- header / footer ---------- */
-const rightTab = (landscape) => [{ type: TabStopType.RIGHT, position: landscape ? TEXT_W_LANDSCAPE : TEXT_W }];
+const INDEX_W = [1100, 6526, 1400]; // CH.NO | CONTENT | PAGE NO  (sum = TEXT_W)
+const INDEX_BORDER = { style: BorderStyle.SINGLE, size: 6, color: '000000' };
+const INDEX_BORDERS = { top: INDEX_BORDER, bottom: INDEX_BORDER, left: INDEX_BORDER, right: INDEX_BORDER };
 
-const makeHeader = (landscape) => new Header({
-  children: [new Paragraph({
-    tabStops: rightTab(landscape),
-    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '555555', space: 4 } },
-    children: [
-      new TextRun({ text: team.projectTitle, font: FONT, size: 20, bold: true }),
-      new TextRun({ text: '\tProject Document \u2014 Presentation 1', font: FONT, size: 20 }),
+function indexCell(text, width, { bold = false, align = AlignmentType.LEFT, indent = 0 } = {}) {
+  return new TableCell({
+    width: { size: width, type: WidthType.DXA },
+    borders: INDEX_BORDERS,
+    verticalAlign: VerticalAlign.CENTER,
+    margins: { top: 70, bottom: 70, left: 110, right: 110 },
+    children: [new Paragraph({
+      alignment: align,
+      indent: indent ? { left: indent } : undefined,
+      spacing: { ...SINGLE, after: 0 },
+      children: [new TextRun({ text, font: FONT, size: 22, bold })],
+    })],
+  });
+}
+
+function indexTable(tocEntries, pg) {
+  const C = AlignmentType.CENTER;
+  const page = (e) => String(pg(`h:${e.text}`)).padStart(2, '0');
+  return new Table({
+    width: { size: TEXT_W, type: WidthType.DXA },
+    columnWidths: INDEX_W,
+    alignment: AlignmentType.CENTER,
+    rows: [
+      new TableRow({ tableHeader: true, cantSplit: true, children: ['CH.NO', 'CONTENT', 'PAGE NO'].map((h, i) => indexCell(h, INDEX_W[i], { bold: true, align: C })) }),
+      ...tocEntries.map((e) => {
+        const chapter = e.level === 1 ? e.text.match(/^(\d+)\.\s+(.*)$/) : null;
+        return new TableRow({ cantSplit: true, children: [
+          indexCell(chapter ? `${chapter[1]}.` : '', INDEX_W[0], { align: C, bold: !!chapter }),
+          indexCell(chapter ? chapter[2] : e.text, INDEX_W[1], { bold: !!chapter, indent: chapter ? 0 : 300 }),
+          indexCell(page(e), INDEX_W[2], { align: C }),
+        ] });
+      }),
     ],
+  });
+}
+
+/* ---------- header / footer ---------- */
+// Guidelines: header = project title; footer = page number and enrollment numbers.
+const rightTab = (landscape) => [{ type: TabStopType.RIGHT, position: landscape ? TEXT_W_LANDSCAPE : TEXT_W }];
+const ENROLLMENTS = team.members.map((m) => m.enrollment).join(', ');
+
+const makeHeader = () => new Header({
+  children: [new Paragraph({
+    alignment: AlignmentType.CENTER,
+    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '555555', space: 4 } },
+    children: [new TextRun({ text: team.projectTitle, font: FONT, size: 20, bold: true })],
   })],
 });
 
@@ -200,48 +240,48 @@ const makeFooter = (landscape) => new Footer({
     tabStops: rightTab(landscape),
     border: { top: { style: BorderStyle.SINGLE, size: 6, color: '555555', space: 4 } },
     children: [
-      new TextRun({ text: 'SVIT, Vasad \u2014 MCA Semester III\tPage ', font: FONT, size: 20 }),
+      new TextRun({ text: `${ENROLLMENTS}\t`, font: FONT, size: 20 }),
       new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 20 }),
     ],
   })],
 });
 
-/* ---------- title page ---------- */
+/* ---------- title page (guidelines, Annexure-2) ---------- */
+const LOGO = path.join(__dirname, 'assets', 'svit-logo.png');
+
 function titlePage() {
-  const c = (text, size, o = {}) => new Paragraph({
+  const c = (children, o = {}) => new Paragraph({
     alignment: AlignmentType.CENTER,
-    spacing: { before: o.before || 0, after: o.after ?? 120 },
-    children: runs(text, { size, bold: o.bold, italics: o.italics, allCaps: o.caps }),
+    spacing: { ...SINGLE, before: o.before || 0, after: o.after ?? 80 },
+    children,
   });
-  const colW = [3300, 2600, 3126];
-  const members = new Table({
-    width: { size: TEXT_W, type: WidthType.DXA },
-    columnWidths: colW,
-    alignment: AlignmentType.CENTER,
-    rows: [
-      new TableRow({ children: ['Name', 'Enrollment No.', 'Role'].map((h, i) => cell(h, colW[i], { header: true, size: 22 })) }),
-      ...team.members.map((m) => new TableRow({ children: [m.name, m.enrollment, m.role].map((t, i) => cell(t, colW[i], { size: 22 })) })),
-    ],
-  });
+  const t = (text, size, o = {}) => new TextRun({ text, font: FONT, size, bold: o.bold ?? true, italics: o.italics, superScript: o.sup });
+  const logo = fs.existsSync(LOGO) ? pngSize(LOGO) : null;
+  const logoH = 1.75; // inches
   return [
-    c('A', 24, { before: 200 }),
-    c('Project Document', 28, { bold: true }),
-    c('on', 24),
-    c(team.projectTitle, 52, { bold: true, caps: true, before: 120, after: 200 }),
-    c('Project Document — Presentation 1', 28, { bold: true, after: 320 }),
-    c('Submitted in partial fulfilment of the requirements of the subject', 24),
-    c(team.subject, 26, { bold: true }),
-    c(team.program, 24, { after: 360 }),
-    c(`Submitted by (Team No. ${team.teamNo})`, 24, { bold: true, after: 140 }),
-    members,
-    c('Under the guidance of', 24, { before: 360 }),
-    c(team.guide, 26, { bold: true, after: 480 }),
-    c('Master of Computer Applications', 26, { bold: true }),
-    c(team.institute, 28, { bold: true }),
-    c('Academic Year 2026-27', 24, { after: 60 }),
-    c(`Presentation date: ${team.presentationDate}`, 24),
+    c([t('A PROJECT REPORT ON', 32, { bold: false })], { before: 700, after: 200 }),
+    c([t(`“${team.projectTitle}”`, 44)], { after: 200 }),
+    c([t('Submitted By,', 32)], { after: 200 }),
+    ...team.members.map((m, i) => c([t(`${m.name} (${m.enrollment})${i < team.members.length - 1 ? ',' : ''}`, 32)], { after: 60 })),
+    c([t('Guided By,', 32)], { before: 200, after: 120 }),
+    c([t(team.guide.toUpperCase(), 32)], { after: 900 }),
+    logo
+      ? c([new ImageRun({ type: 'png', data: logo.data, transformation: { width: Math.round((logo.w / logo.h) * logoH * 96), height: Math.round(logoH * 96) } })], { after: 700 })
+      : c([], { before: Math.round(logoH * 1440), after: 400 }),
+    c([t('In partial fulfillment of the requirements of the', 32)], { after: 60 }),
+    c([t('3', 32), t('rd', 32, { sup: true }), t(' Semester of Master of Computer Applications', 32)], { after: 60 }),
+    c([t('Subject Name : Minor Project (MC03094171)', 32, { italics: true })], { after: 700 }),
+    c([t('SARDAR VALLABHBHAI PATEL INSTITUTE', 32)], { after: 60 }),
+    c([t('OF TECHNOLOGY, VASAD', 32)], { after: 60 }),
+    c([t(team.reportMonth || 'September 2026', 32)], { after: 0 }),
   ];
 }
+
+const TITLE_BORDER = { style: BorderStyle.THICK_THIN_MEDIUM_GAP, size: 36, color: '00008B', space: 24 };
+const titlePageBorders = {
+  pageBorders: { display: PageBorderDisplay.ALL_PAGES, offsetFrom: PageBorderOffsetFrom.PAGE, zOrder: PageBorderZOrder.FRONT },
+  pageBorderTop: TITLE_BORDER, pageBorderBottom: TITLE_BORDER, pageBorderLeft: TITLE_BORDER, pageBorderRight: TITLE_BORDER,
+};
 
 /* ---------- assemble ---------- */
 function build(pages) {
@@ -293,14 +333,13 @@ function build(pages) {
   flush();
 
   const front = [
-    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 300 }, children: [new TextRun({ text: 'TABLE OF CONTENTS', font: FONT, size: 32, bold: true })] }),
-    tocLine('List of Figures', pg('front:List of Figures'), { bold: true }),
-    tocLine('List of Tables', pg('front:List of Tables'), { bold: true }),
-    ...tocEntries.map((e) => tocLine(e.text, pg(`h:${e.text}`), { indent: e.level === 1 ? 0 : 400, bold: e.level === 1 })),
-    frontHeading('LIST OF FIGURES'),
-    ...figures.map((f) => tocLine(f, pg(`c:${f}`))),
-    frontHeading('LIST OF TABLES'),
-    ...tables.map((t) => tocLine(t, pg(`c:${t}`))),
+    frontHeading('ACKNOWLEDGEMENT', { pageBreak: false }),
+    ...content.front.acknowledgement.map((t) => para(t, { after: 200 })),
+    ...team.members.map((m, i) => para(`${m.name} (${m.enrollment})`, { align: AlignmentType.RIGHT, before: i === 0 ? 400 : 0, after: 40, run: { bold: true } })),
+    frontHeading('ABSTRACT'),
+    ...content.front.abstract.map((t) => para(t, { after: 200 })),
+    frontHeading('INDEX'),
+    indexTable(tocEntries, pg),
   ];
 
   const pageProps = (landscape, extra = {}) => ({
@@ -318,15 +357,15 @@ function build(pages) {
       default: { document: { run: { font: FONT, size: BODY.size } } },
       paragraphStyles: [
         { id: 'Heading1', name: 'Heading 1', basedOn: 'Normal', next: 'Normal', quickFormat: true,
-          run: { font: FONT, size: 32, bold: true, color: '000000', allCaps: true },
-          paragraph: { spacing: { before: 0, after: 320 }, outlineLevel: 0 } },
+          run: { font: FONT, size: 32, bold: true, color: '000000' }, // 16 pt
+          paragraph: { spacing: { before: 0, after: 240 }, outlineLevel: 0 } },
         { id: 'Heading2', name: 'Heading 2', basedOn: 'Normal', next: 'Normal', quickFormat: true,
           run: { font: FONT, size: 28, bold: true, color: '000000' },
-          paragraph: { spacing: { before: 320, after: 160 }, outlineLevel: 1 } },
+          paragraph: { spacing: { before: 280, after: 140 }, outlineLevel: 1 } }, // 14 pt
         { id: 'FooterText', name: 'Footer Text', basedOn: 'Normal', run: { font: FONT, size: 20 } },
         { id: 'Heading3', name: 'Heading 3', basedOn: 'Normal', next: 'Normal', quickFormat: true,
           run: { font: FONT, size: 24, bold: true, color: '000000' },
-          paragraph: { spacing: { before: 240, after: 120 }, outlineLevel: 2 } },
+          paragraph: { spacing: { before: 200, after: 100 }, outlineLevel: 2 } }, // 12 pt
       ],
     },
     numbering: {
@@ -338,12 +377,13 @@ function build(pages) {
       ],
     },
     sections: [
-      { properties: pageProps(false), children: titlePage() },
-      { properties: { type: SectionType.NEXT_PAGE, ...pageProps(false, { pageNumbers: { start: 1, formatType: NumberFormat.LOWER_ROMAN } }) },
-        headers: { default: makeHeader(false) }, footers: { default: makeFooter(false) }, children: front },
+      // Title page counts as roman page i (not printed); the front matter therefore starts at ii.
+      { properties: pageProps(false, { borders: titlePageBorders }), children: titlePage() },
+      { properties: { type: SectionType.NEXT_PAGE, ...pageProps(false, { pageNumbers: { start: 2, formatType: NumberFormat.LOWER_ROMAN } }) },
+        headers: { default: makeHeader() }, footers: { default: makeFooter(false) }, children: front },
       ...bodySections.map((s, i) => ({
         properties: { type: SectionType.NEXT_PAGE, ...pageProps(s.landscape, i === 0 ? { pageNumbers: { start: 1, formatType: NumberFormat.DECIMAL } } : { pageNumbers: { formatType: NumberFormat.DECIMAL } }) },
-        headers: { default: makeHeader(s.landscape) }, footers: { default: makeFooter(s.landscape) }, children: s.children,
+        headers: { default: makeHeader() }, footers: { default: makeFooter(s.landscape) }, children: s.children,
       })),
     ],
   });
@@ -359,9 +399,8 @@ function toPdf(docxPath, outDir) {
 }
 
 const norm = (s) => s.replace(/\s+/g, ' ').trim().toLowerCase();
-const toRoman = (n) => ['', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x'][n] || String(n);
 
-function resolvePages(pdfPath, { tocEntries, figures, tables }) {
+function resolvePages(pdfPath, { tocEntries }) {
   const text = execFileSync('pdftotext', ['-layout', pdfPath, '-'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   const pageLines = text.split('\f').map((p) => p.split('\n').map(norm).filter(Boolean));
   const firstH1 = norm(tocEntries[0].text);
@@ -373,20 +412,10 @@ function resolvePages(pdfPath, { tocEntries, figures, tables }) {
     return -1;
   };
   const headingMatch = (l, n) => l === n || (l.length > 25 && n.startsWith(l));
-  const captionMatch = (l, n) => l === n || l.startsWith(n.split(':')[0] + ':');
-  for (const e of tocEntries) {
+    for (const e of tocEntries) {
     const i = find(norm(e.text), bodyStart, pageLines.length, headingMatch);
     if (i < 0) throw new Error(`Heading not found in PDF: ${e.text}`);
     pages[`h:${e.text}`] = i - bodyStart + 1;
-  }
-  for (const c of [...figures, ...tables]) {
-    const i = find(norm(c), bodyStart, pageLines.length, captionMatch);
-    if (i < 0) throw new Error(`Caption not found in PDF: ${c}`);
-    pages[`c:${c}`] = i - bodyStart + 1;
-  }
-  for (const f of ['List of Figures', 'List of Tables']) {
-    const i = find(norm(f), 1, bodyStart, (l, n) => l === n);
-    pages[`front:${f}`] = toRoman(i); // pdf page index 1 = roman i (title page is index 0)
   }
   return pages;
 }
@@ -403,7 +432,7 @@ function resolvePages(pdfPath, { tocEntries, figures, tables }) {
   try {
     pages = resolvePages(toPdf(draft, tmp), pass1);
   } catch (err) {
-    console.warn(`! Page numbers could not be resolved (${err.message}); TOC will show 0.`);
+    console.warn(`! Page numbers could not be resolved (${err.message}); INDEX will show 00.`);
   }
 
   const pass2 = build(pages);
@@ -415,5 +444,5 @@ function resolvePages(pdfPath, { tocEntries, figures, tables }) {
     console.warn(`! PDF export skipped: ${err.message}`);
   }
   fs.rmSync(tmp, { recursive: true, force: true });
-  console.log(`${pass2.figures.length} figures, ${pass2.tables.length} tables, ${pass2.tocEntries.length} TOC entries`);
+  console.log(`${pass2.figures.length} figures, ${pass2.tables.length} tables, ${pass2.tocEntries.length} INDEX entries`);
 })();
