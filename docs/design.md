@@ -5,7 +5,7 @@ frontend, the UML diagrams and the data dictionary are all derived from it. If
 code and this document disagree, fix one of them in the same commit.
 
 - **Course:** MC03094171 Research Work (Phase-1) / Minor Project — MCA Sem III, SVIT Vasad
-- **Team:** Udit Mishra (backend / database / API), Hardik Vaghela (frontend / UI), Vraj (documentation / UML / system design)
+- **Team:** Udit Mishra (backend / database / API), Hardik Vaghela (frontend / UI), Vraj Panchal (documentation / UML / system design)
 - **Stack:** React.js (Vite), Node.js, Express.js, MongoDB (Mongoose), JavaScript, HTML5, CSS3, Places API, Route/Distance API, Git
 
 ## 1. Product summary

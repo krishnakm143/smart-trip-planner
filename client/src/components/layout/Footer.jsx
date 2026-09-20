@@ -9,7 +9,7 @@ export default function Footer() {
         <div>
           <p className={styles.name}>Smart Trip Planner</p>
           <p className={styles.note}>
-            Minor project, MCA Semester III, SVIT Vasad. Built by Udit Mishra, Hardik Vaghela and Vraj.
+            Minor project, MCA Semester III, SVIT Vasad. Built by Udit Mishra, Hardik Vaghela and Vraj Panchal.
           </p>
         </div>
         <ul className={styles.links}>
