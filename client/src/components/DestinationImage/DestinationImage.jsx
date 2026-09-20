@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { withBase } from '../../utils/basePath'
 import styles from './DestinationImage.module.css'
 
 /** Destination photo that degrades to a tinted name panel when the file is missing. */
@@ -16,7 +17,7 @@ export default function DestinationImage({ src, name, alt = '', eager = false, c
   return (
     <img
       className={`${styles.photo} ${className}`}
-      src={src}
+      src={withBase(src)}
       alt={alt}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"

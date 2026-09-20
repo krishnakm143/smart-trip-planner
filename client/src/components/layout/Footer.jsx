@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { withBase } from '../../utils/basePath'
 import styles from './Footer.module.css'
 
 export default function Footer() {
@@ -19,7 +20,7 @@ export default function Footer() {
             <Link to="/plan">Plan a trip</Link>
           </li>
           <li>
-            <a href="/images/CREDITS.md">Photo credits</a>
+            <a href={withBase('/images/CREDITS.md')}>Photo credits</a>
           </li>
         </ul>
       </div>

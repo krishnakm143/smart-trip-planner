@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useNavigate } from 'react-router-dom'
 import { onUnauthorized, tokenStore } from '../services/apiClient'
 import * as authService from '../services/authService'
+import { stripBase } from '../utils/basePath'
 
 const AuthContext = createContext(null)
 
@@ -18,7 +19,7 @@ export function AuthProvider({ children }) {
       if (restoringRef.current) return
       navigate('/login', {
         replace: true,
-        state: { from: { pathname: window.location.pathname }, sessionExpired: true },
+        state: { from: { pathname: stripBase(window.location.pathname) }, sessionExpired: true },
       })
     })
     return () => onUnauthorized(null)

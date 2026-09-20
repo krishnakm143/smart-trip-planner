@@ -1,0 +1,18 @@
+.notice {
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--line);
+  background: var(--marigold-tint);
+  color: var(--marigold-ink);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+}
+
+.notice strong {
+  font-weight: 600;
+}
+
+@media print {
+  .notice {
+    display: none;
+  }
+}

@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "dev:pages": "vite --mode pages",
+    "build:pages": "vite build --mode pages",
+    "preview:pages": "vite preview --mode pages",
     "lint": "eslint ."
   },
   "dependencies": {

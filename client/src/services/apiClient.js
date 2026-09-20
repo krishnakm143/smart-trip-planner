@@ -20,6 +20,17 @@ export const tokenStore = {
 
 let unauthorizedHandler = null
 
+// The GitHub Pages build has no API server behind it. There, requests are
+// answered in the browser by src/browser-api, which mirrors the REST contract.
+const useBrowserApi = import.meta.env.VITE_DATA_MODE === 'browser'
+let browserApi
+
+function send(url, init) {
+  if (!useBrowserApi) return fetch(url, init)
+  browserApi ??= import('../browser-api/browserFetch')
+  return browserApi.then(({ browserFetch }) => browserFetch(url, init))
+}
+
 export function onUnauthorized(handler) {
   unauthorizedHandler = handler
 }
@@ -53,7 +64,7 @@ async function request(path, { method = 'GET', body, query, signal, withMeta = f
 
   let response
   try {
-    response = await fetch(buildUrl(path, query), {
+    response = await send(buildUrl(path, query), {
       method,
       headers,
       signal,
