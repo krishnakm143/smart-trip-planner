@@ -1,0 +1,49 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgba(27, 42, 43, 0.55);
+  animation: fade var(--duration) var(--ease);
+}
+
+.panel {
+  width: min(100%, 27rem);
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-raised);
+  animation: rise 220ms var(--ease);
+}
+
+.title {
+  font-size: var(--text-lg);
+}
+
+.description {
+  margin-top: var(--space-3);
+  color: var(--ink-soft);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}

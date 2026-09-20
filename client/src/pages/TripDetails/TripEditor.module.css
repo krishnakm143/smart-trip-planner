@@ -1,0 +1,30 @@
+.heading {
+  margin-bottom: var(--space-5);
+  font-size: var(--text-xl);
+}
+
+.form {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+}
+
+.form > div {
+  width: 100%;
+}
+
+.printNotes {
+  display: none;
+  white-space: pre-wrap;
+}
+
+@media print {
+  .screenOnly,
+  .form {
+    display: none;
+  }
+
+  .printNotes {
+    display: block;
+  }
+}

@@ -1,0 +1,105 @@
+.banner {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 16rem;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  color: var(--on-accent);
+}
+
+.bannerImage {
+  position: absolute;
+  inset: 0;
+}
+
+.bannerScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(12, 24, 25, 0.85), rgba(12, 24, 25, 0.05) 75%);
+}
+
+.bannerText {
+  position: relative;
+  padding: var(--space-5) var(--space-6);
+}
+
+.title {
+  font-size: var(--text-2xl);
+}
+
+.notice {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-tint);
+  color: var(--accent-strong);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(19rem, 1fr);
+  gap: var(--space-7);
+  margin-top: var(--space-7);
+}
+
+.columns > * {
+  min-width: 0;
+}
+
+.columnHeading {
+  margin-bottom: var(--space-5);
+  font-size: var(--text-xl);
+}
+
+.side {
+  position: sticky;
+  top: 5.5rem;
+  align-self: start;
+}
+
+.save {
+  margin-top: var(--space-5);
+}
+
+.saveButton {
+  width: 100%;
+}
+
+.saveHint {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.provider {
+  margin-top: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.providerBadge {
+  margin-inline: var(--space-1) var(--space-2);
+  padding: 0.1rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-tint);
+  font-weight: 600;
+  color: var(--accent-strong);
+}
+
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: 1fr;
+    gap: var(--space-7);
+  }
+
+  .side {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .bannerText {
+    padding: var(--space-4);
+  }
+}

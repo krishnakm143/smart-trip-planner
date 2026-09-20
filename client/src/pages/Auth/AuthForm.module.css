@@ -1,0 +1,41 @@
+.form {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.formError {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--danger);
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+
+.submit {
+  margin-top: var(--space-2);
+}
+
+.demo {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.demo code {
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.demoButton {
+  margin-left: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

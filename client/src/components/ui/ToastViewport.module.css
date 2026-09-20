@@ -1,0 +1,78 @@
+.viewport {
+  position: fixed;
+  z-index: 60;
+  inset: auto var(--space-4) var(--space-4) var(--space-4);
+  display: grid;
+  justify-items: end;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: min(100%, 26rem);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid rgba(243, 238, 227, 0.25);
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--text-sm);
+  box-shadow: var(--shadow-raised);
+  pointer-events: auto;
+  animation: slide 240ms var(--ease);
+}
+
+.icon {
+  flex: none;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.success .icon {
+  color: #8fd1a0;
+}
+
+.error .icon {
+  color: #f0a79d;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-right: -0.4rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.close:hover {
+  opacity: 1;
+}
+
+.close:focus-visible {
+  outline-color: var(--paper);
+}
+
+.close svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+@keyframes slide {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media print {
+  .viewport {
+    display: none;
+  }
+}

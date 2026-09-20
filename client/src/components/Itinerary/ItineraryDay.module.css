@@ -1,0 +1,226 @@
+.day {
+  --time-col: 5.75rem;
+  --rail-col: 2rem;
+  --rail-color: var(--line-strong);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-5);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-size: var(--text-lg);
+}
+
+.date {
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-soft);
+}
+
+.totals {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.timeline {
+  padding-top: var(--space-5);
+}
+
+.stop,
+.leg,
+.lunch {
+  display: grid;
+  grid-template-columns: var(--time-col) var(--rail-col) minmax(0, 1fr);
+  column-gap: var(--space-4);
+}
+
+.stop {
+  position: relative;
+  align-items: start;
+}
+
+/* The rail continues below each marker until the last stop. */
+.stop:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 2rem;
+  bottom: 0;
+  left: calc(var(--time-col) + var(--space-4) + var(--rail-col) / 2 - 1px);
+  border-left: 2px solid var(--rail-color);
+}
+
+.time {
+  padding-top: 0.2rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  line-height: 1.3;
+}
+
+.timeEnd {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--ink-faint);
+}
+
+.marker {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: var(--rail-col);
+  height: var(--rail-col);
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.stopBody {
+  padding-bottom: var(--space-4);
+}
+
+.stopName {
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+
+.stopMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.type {
+  padding: 0 0.55rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.legRail {
+  grid-column: 2;
+  justify-self: center;
+  border-left: 2px dashed var(--rail-color);
+}
+
+.legText,
+.lunchText {
+  grid-column: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+.legText svg,
+.lunchText svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--ink-faint);
+}
+
+.lunchText {
+  justify-self: start;
+  margin-block: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--marigold-tint);
+  color: var(--marigold-ink);
+  font-weight: 500;
+}
+
+.lunchText svg {
+  color: inherit;
+}
+
+.freeDay,
+.note {
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border-left: 3px solid var(--marigold);
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+
+@media (max-width: 560px) {
+  .stop,
+  .leg,
+  .lunch {
+    grid-template-columns: var(--rail-col) minmax(0, 1fr);
+    column-gap: var(--space-3);
+  }
+
+  .stop:not(:last-child)::after {
+    left: calc(var(--rail-col) / 2 - 1px);
+  }
+
+  .time {
+    grid-column: 2;
+    grid-row: 1;
+    padding-top: 0.3rem;
+    text-align: left;
+  }
+
+  .timeEnd {
+    display: inline;
+    margin-left: var(--space-2);
+  }
+
+  .marker {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .stopBody {
+    grid-column: 2;
+  }
+
+  .legRail {
+    grid-column: 1;
+  }
+
+  .legText,
+  .lunchText {
+    grid-column: 2;
+  }
+}
+
+@media print {
+  .day {
+    break-inside: avoid;
+  }
+
+  .marker {
+    border: 1px solid #000;
+    background: none;
+    color: #000;
+  }
+}

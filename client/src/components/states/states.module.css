@@ -1,0 +1,42 @@
+.state {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  max-width: 34rem;
+  padding: var(--space-6);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+}
+
+.title {
+  font-size: var(--text-lg);
+}
+
+.message {
+  color: var(--ink-soft);
+  margin-bottom: var(--space-2);
+}
+
+.loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 50vh;
+  color: var(--ink-soft);
+}
+
+.spinner {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--line-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

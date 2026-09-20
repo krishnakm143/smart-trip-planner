@@ -1,0 +1,25 @@
+.chip {
+  min-height: 2.5rem;
+  padding: 0.35rem 1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition:
+    background-color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease),
+    color var(--duration) var(--ease);
+}
+
+.chip:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}

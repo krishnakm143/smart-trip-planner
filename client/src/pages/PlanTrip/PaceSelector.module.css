@@ -1,0 +1,68 @@
+.group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.option {
+  display: grid;
+  gap: 0.1rem;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  transition:
+    background-color var(--duration) var(--ease),
+    color var(--duration) var(--ease);
+}
+
+.option + .option {
+  border-left: 1px solid var(--line-strong);
+}
+
+.option:hover {
+  background: var(--paper-deep);
+}
+
+.option:has(input:checked) {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.option:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.label {
+  font-weight: 600;
+}
+
+.hours {
+  font-size: var(--text-xs);
+  opacity: 0.8;
+}
+
+.error {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--danger);
+}
+
+@media (max-width: 480px) {
+  .options {
+    grid-template-columns: 1fr;
+  }
+
+  .option + .option {
+    border-top: 1px solid var(--line-strong);
+    border-left: 0;
+  }
+}

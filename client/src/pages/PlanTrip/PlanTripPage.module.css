@@ -1,0 +1,26 @@
+.page {
+  padding-top: var(--space-7);
+}
+
+.header {
+  max-width: 40rem;
+  margin-bottom: var(--space-6);
+}
+
+.heading {
+  font-size: var(--text-2xl);
+}
+
+.lede {
+  margin-top: var(--space-3);
+  font-size: var(--text-md);
+  color: var(--ink-soft);
+}
+
+.preview {
+  scroll-margin-top: 5.5rem;
+}
+
+.preview:not(:empty) {
+  margin-top: var(--space-8);
+}

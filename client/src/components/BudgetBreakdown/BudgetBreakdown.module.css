@@ -1,0 +1,141 @@
+.budget {
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.caption {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.total {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.perPerson {
+  text-align: right;
+}
+
+.perPersonValue {
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.bar {
+  display: flex;
+  gap: 2px;
+  height: 1.25rem;
+  margin-block: var(--space-5) var(--space-4);
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+
+.segment {
+  flex-basis: 0;
+  min-width: 3px;
+  transform-origin: left;
+  animation: grow 600ms var(--ease) both;
+}
+
+.stay {
+  background: var(--budget-stay);
+}
+
+.food {
+  background: var(--budget-food);
+}
+
+.transport {
+  background: var(--budget-transport);
+}
+
+.activities {
+  background: var(--budget-activities);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table tr + tr {
+  border-top: 1px solid var(--line);
+}
+
+.table th,
+.table td {
+  padding-block: var(--space-3);
+  vertical-align: top;
+}
+
+.table th {
+  display: flex;
+  gap: var(--space-3);
+  font-weight: 600;
+  text-align: left;
+}
+
+.swatch {
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-top: 0.4rem;
+  border-radius: 2px;
+}
+
+.basis {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--ink-faint);
+}
+
+.share {
+  width: 3.5rem;
+  padding-inline: var(--space-3);
+  text-align: right;
+  color: var(--ink-soft);
+}
+
+.amount {
+  text-align: right;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.footnote {
+  margin-top: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media print {
+  .budget {
+    break-inside: avoid;
+  }
+
+  .segment,
+  .swatch {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

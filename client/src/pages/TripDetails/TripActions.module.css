@@ -1,0 +1,48 @@
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.status label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.status select {
+  min-height: 2.5rem;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.buttons {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.delete {
+  color: var(--danger);
+}
+
+.delete:hover:not(:disabled) {
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+
+@media print {
+  .actions {
+    display: none;
+  }
+}

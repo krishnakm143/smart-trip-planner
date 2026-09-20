@@ -1,0 +1,152 @@
+.state {
+  padding-top: var(--space-8);
+}
+
+.hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(22rem, 62vh, 38rem);
+  color: var(--on-accent);
+}
+
+.heroImage {
+  position: absolute;
+  inset: 0;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(12, 24, 25, 0.82), rgba(12, 24, 25, 0.1) 60%);
+}
+
+.heroText {
+  position: relative;
+  padding-block: var(--space-7);
+}
+
+.breadcrumb {
+  display: flex;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.breadcrumb a:focus-visible {
+  outline-color: var(--on-accent);
+}
+
+.name {
+  margin-top: var(--space-2);
+  font-size: var(--text-hero);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  max-width: 40rem;
+  margin-top: var(--space-3);
+  font-size: var(--text-md);
+}
+
+.intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 1fr);
+  gap: var(--space-7);
+  padding-top: var(--space-7);
+}
+
+.sectionHeading {
+  margin-bottom: var(--space-5);
+  font-size: var(--text-xl);
+}
+
+.description {
+  max-width: 42rem;
+  font-size: var(--text-md);
+  line-height: 1.6;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+.tags li {
+  padding: 0.1rem 0.7rem;
+  border-radius: var(--radius-pill);
+  background: var(--paper-deep);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.facts {
+  align-self: start;
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.facts dl > div {
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.facts dl > div:first-child {
+  padding-top: 0;
+}
+
+.facts dt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.facts dt svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--accent);
+}
+
+.facts dd {
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.planButton {
+  width: 100%;
+  margin-top: var(--space-5);
+}
+
+.section {
+  padding-top: var(--space-8);
+}
+
+.closing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+  padding-block: var(--space-6);
+  border-block: 1px solid var(--line-strong);
+}
+
+.closingText {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1.25;
+}
+
+@media (max-width: 800px) {
+  .intro {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+}

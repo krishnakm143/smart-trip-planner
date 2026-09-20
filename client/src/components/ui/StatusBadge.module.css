@@ -1,0 +1,33 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.15rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.badge::before {
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.planned {
+  background: var(--marigold-tint);
+  color: var(--marigold-ink);
+}
+
+.completed {
+  background: var(--success-tint);
+  color: var(--success);
+}
+
+.cancelled {
+  background: var(--paper-deep);
+  color: var(--ink-soft);
+}

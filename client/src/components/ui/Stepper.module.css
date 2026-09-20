@@ -1,0 +1,51 @@
+.stepper {
+  display: inline-grid;
+  grid-template-columns: 2.875rem 4rem 2.875rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  width: max-content;
+}
+
+.step {
+  display: grid;
+  place-items: center;
+  min-height: 2.875rem;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+}
+
+.step:hover:not(:disabled) {
+  background: var(--paper-deep);
+}
+
+.step:disabled {
+  color: var(--line-strong);
+  cursor: not-allowed;
+}
+
+.step svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.stepper input.value {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-inline: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  text-align: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.value::-webkit-outer-spin-button,
+.value::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
