@@ -554,14 +554,14 @@ module.exports = (team) => {
     'total      = stay + food + transport + activities',
     'perPerson  = round(total / travelers)',
   ]);
-  p('**Worked example.** The demonstration plan is a trip to Manali of 4 days for 2 travellers in the standard tier. The seeded standard-tier daily cost of Manali is Rs. 3,000 per room per night for stay, Rs. 900 per person per day for food and Rs. 900 per person per day for transport. For the illustration it is assumed that the entry fees of the scheduled activities add up to Rs. 1,300 per person; the actual figure depends on the generated itinerary. With three travellers instead of two, the number of rooms would become ceil(3 / 2) = 2, which doubles the stay component.');
+  p('**Worked example.** The demonstration plan is a trip to Manali of 4 days for 2 travellers in the standard tier. The seeded standard-tier daily cost of Manali is Rs. 3,000 per room per night for stay, Rs. 900 per person per day for food and Rs. 900 per person per day for transport. With the interests Adventure and Nature at a balanced pace, the generated itinerary schedules ten activities whose entry fees add up to Rs. 1,300 per person (Rohtang Pass 550, Solang Valley 700, Naggar Castle 30 and Van Vihar National Park 20; the remaining stops are free). With three travellers instead of two, the number of rooms would become ceil(3 / 2) = 2, which doubles the stay component.');
   table('Table 3.16: Worked Budget Example (Manali, 4 days, 2 travellers, standard tier)', ['Quantity', 'Computation', 'Result'], [24, 50, 26], [
     ['nights', 'max(4 − 1, 1)', '3'],
     ['rooms', 'ceil(2 / 2)', '1'],
     ['stay', '3,000 × 1 room × 3 nights', 'Rs. 9,000'],
     ['food', '900 × 2 travellers × 4 days', 'Rs. 7,200'],
     ['transport', '900 × 2 travellers × 4 days', 'Rs. 7,200'],
-    ['activities', '1,300 (assumed) × 2 travellers', 'Rs. 2,600'],
+    ['activities', '1,300 × 2 travellers', 'Rs. 2,600'],
     ['**total**', '9,000 + 7,200 + 7,200 + 2,600', '**Rs. 26,000**'],
     ['**perPerson**', 'round(26,000 / 2)', '**Rs. 13,000**'],
   ]);
