@@ -53,8 +53,9 @@ async function searchPlaces(destination, type) {
   for (const element of body.elements ?? []) {
     const location = pointOf(element);
     const name = element.tags?.['name:en'] ?? element.tags?.name;
-    if (!location || !name || seen.has(name)) continue;
-    seen.add(name);
+    const key = name?.toLowerCase();
+    if (!location || !name || seen.has(key)) continue;
+    seen.add(key);
     places.push({
       name,
       type: typeFromTags(element.tags, type),
