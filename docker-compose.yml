@@ -8,5 +8,18 @@ services:
     volumes:
       - stp-mongo-data:/data/db
 
+  # Browser view of the database for development: http://localhost:8081
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: stp-mongo-express
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    ports:
+      - "127.0.0.1:8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017
+      ME_CONFIG_BASICAUTH: "false"
+
 volumes:
   stp-mongo-data:

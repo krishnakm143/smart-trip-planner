@@ -35,6 +35,9 @@ npm run dev
 
 Demo login: `demo@smarttrip.in` / `Demo@1234`
 
+`docker compose up -d` also starts a database viewer at <http://localhost:8081>
+(mongo-express, bound to this machine only) for browsing the collections.
+
 `MAPS_PROVIDER` in `server/.env` chooses where places and road distances come from:
 
 | Value | Places | Road distance | Needs |
