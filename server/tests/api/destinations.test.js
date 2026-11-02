@@ -14,7 +14,7 @@ beforeAll(async () => {
 afterAll(stopTestDb);
 
 describe('GET /health', () => {
-  it('reports service, database and provider status', async () => {
+  it('reports service, database and provider status at /api/v1/health', async () => {
     const response = await api.get('/api/v1/health');
 
     expect(response.status).toBe(200);
@@ -22,6 +22,33 @@ describe('GET /health', () => {
       success: true,
       data: { status: 'ok', db: 'connected', provider: 'local' },
     });
+  });
+
+  it('answers Railway health checks at root /health', async () => {
+    const response = await api.get('/health');
+    expect(response.status).toBe(200);
+    expect(response.body.data.status).toBe('ok');
+  });
+
+  it('answers service root GET / with status ok', async () => {
+    const response = await api.get('/');
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe('ok');
+  });
+});
+
+describe('GET /destinations/places/photo', () => {
+  it('rejects missing or malformed photo resource names with 400', async () => {
+    const resNoName = await api.get('/api/v1/destinations/places/photo');
+    expect(resNoName.status).toBe(400);
+
+    const resBadName = await api.get('/api/v1/destinations/places/photo').query({ name: 'invalid-name' });
+    expect(resBadName.status).toBe(400);
+  });
+
+  it('returns 404 when Google Maps API key is not configured in test environment', async () => {
+    const res = await api.get('/api/v1/destinations/places/photo').query({ name: 'places/ChIJ123/photos/456' });
+    expect(res.status).toBe(404);
   });
 });
 
@@ -121,5 +148,30 @@ describe('GET /destinations/:slug/discover', () => {
       'Rohtang Pass',
       'Solang Valley',
     ]);
+  });
+});
+
+describe('GET /locations/nearest', () => {
+  it('orders the catalogue by distance without storing the submitted coordinate', async () => {
+    const response = await api.get('/api/v1/locations/nearest').query({
+      lat: 15.4909,
+      lng: 73.8278,
+      limit: 2,
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.items.map((item) => item.slug)).toEqual(['goa', 'manali']);
+    expect(response.body.data.items[0].distanceKm).toBe(0);
+    expect(response.body.data.items[0]).not.toHaveProperty('submittedLocation');
+  });
+
+  it.each([
+    [{ lat: 91, lng: 73 }],
+    [{ lat: 15, lng: 181 }],
+    [{ lat: 15, lng: 73, limit: 13 }],
+  ])('validates malformed coordinates', async (query) => {
+    const response = await api.get('/api/v1/locations/nearest').query(query);
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe('VALIDATION_ERROR');
   });
 });

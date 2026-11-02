@@ -3,6 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { config } from './config/env.js';
+import { getHealth } from './controllers/healthController.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
 import apiRoutes from './routes/index.js';
@@ -22,6 +23,17 @@ export function createApp() {
   if (!config.isTest) {
     app.use(morgan(config.isDev ? 'dev' : 'tiny'));
   }
+
+  app.get('/health', getHealth);
+  app.get('/', (_req, res) => {
+    res.json({
+      status: 'ok',
+      service: 'smart-trip-planner-api',
+      version: '1.0.0',
+      health: '/health',
+      api: '/api/v1',
+    });
+  });
 
   app.use('/api/v1', apiRoutes);
 

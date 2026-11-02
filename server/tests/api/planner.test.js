@@ -45,6 +45,21 @@ describe('POST /planner/preview', () => {
     expect(data.budget.total).toBe(9000 + 7200 + 7200 + feesPerPerson * 2);
   });
 
+  it('compares the estimate with an optional whole-trip budget', async () => {
+    const { data } = (await preview({ maxBudget: 1000 })).body;
+
+    expect(data.budget).toMatchObject({ target: 1000, isWithinTarget: false });
+    expect(data.budget.difference).toBe(1000 - data.budget.total);
+  });
+
+  it('includes user-provided travel and contingency costs', async () => {
+    const { data } = (await preview({ travelToDestinationCost: 12000, contingencyPercent: 10 })).body;
+    const baseTotal = data.budget.total - data.budget.breakdown.intercityTravel - data.budget.breakdown.contingency;
+
+    expect(data.budget.breakdown.intercityTravel).toBe(12000);
+    expect(data.budget.breakdown.contingency).toBe(Math.round((baseTotal + 12000) * 0.1));
+  });
+
   it('applies defaults for interests and pace', async () => {
     const response = await preview({ interests: undefined, pace: undefined });
     expect(response.status).toBe(200);
@@ -63,6 +78,7 @@ describe('POST /planner/preview', () => {
     ['an impossible date', { startDate: '2031-02-30', endDate: '2031-03-02' }, 'startDate'],
     ['zero travellers', { travelers: 0 }, 'travelers'],
     ['an unknown budget tier', { budgetTier: 'royal' }, 'budgetTier'],
+    ['an invalid maximum budget', { maxBudget: 0 }, 'maxBudget'],
     ['an unknown interest', { interests: ['gambling'] }, 'interests.0'],
     ['a malformed destination id', { destinationId: 'abc' }, 'destinationId'],
   ])('rejects %s', async (_label, overrides, path) => {

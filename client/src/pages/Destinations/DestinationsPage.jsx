@@ -8,12 +8,33 @@ import Button from '../../components/ui/Button'
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { useResource } from '../../hooks/useResource'
-import { listDestinations } from '../../services/destinationService'
+import { findNearestDestinations, listDestinations } from '../../services/destinationService'
 import DestinationFilters from './DestinationFilters'
 import Pager from './Pager'
 import styles from './DestinationsPage.module.css'
 
 const PAGE_SIZE = 12
+
+const locationMessage = (error) => {
+  if (error?.code === 1) return 'Location access was not allowed. You can still search by destination or state.'
+  if (error?.code === 2) return 'Your location is unavailable right now. Please try again.'
+  if (error?.code === 3) return 'Finding your location took too long. Please try again.'
+  return 'Location is not available in this browser. You can still search by destination or state.'
+}
+
+function currentPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('unsupported'))
+      return
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: false,
+      maximumAge: 5 * 60 * 1000,
+      timeout: 10_000,
+    })
+  })
+}
 
 export default function DestinationsPage() {
   useDocumentTitle('Destinations')
@@ -23,6 +44,9 @@ export default function DestinationsPage() {
   const page = Number(searchParams.get('page')) || 1
 
   const [searchText, setSearchText] = useState(search)
+  const [nearby, setNearby] = useState(null)
+  const [locating, setLocating] = useState(false)
+  const [locationError, setLocationError] = useState('')
 
   const updateParams = useCallback(
     (changes) => {
@@ -46,6 +70,8 @@ export default function DestinationsPage() {
   )
 
   function handleSearchChange(text) {
+    setNearby(null)
+    setLocationError('')
     setSearchText(text)
     commitSearch(text)
   }
@@ -59,10 +85,37 @@ export default function DestinationsPage() {
   function clearFilters() {
     cancelPendingSearch()
     setSearchText('')
+    clearNearby()
     updateParams({ search: '', category: '', page: '' })
   }
 
-  const hasFilters = Boolean(search || category)
+  async function showNearMe() {
+    setLocating(true)
+    setLocationError('')
+    try {
+      const position = await currentPosition()
+      const result = await findNearestDestinations({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      })
+      setNearby(result)
+      cancelPendingSearch()
+      setSearchText('')
+      updateParams({ search: '', category: '', page: '' })
+    } catch (error) {
+      setLocationError(locationMessage(error))
+    } finally {
+      setLocating(false)
+    }
+  }
+
+  function clearNearby() {
+    setNearby(null)
+    setLocationError('')
+  }
+
+  const hasFilters = Boolean(search || category || nearby)
+  const visibleData = nearby ?? data
 
   return (
     <div className={`container ${styles.page}`}>
@@ -77,11 +130,24 @@ export default function DestinationsPage() {
         searchText={searchText}
         onSearchChange={handleSearchChange}
         category={category}
-        onCategoryChange={(value) => updateParams({ category: value, page: '' })}
+        onCategoryChange={(value) => {
+          setNearby(null)
+          setLocationError('')
+          updateParams({ category: value, page: '' })
+        }}
+        nearMe={Boolean(nearby)}
+        locating={locating}
+        locationError={locationError}
+        onLocate={showNearMe}
+        onClearLocation={clearNearby}
       />
 
       <p className={styles.count} role="status">
-        {loading ? 'Loading destinations' : data ? `${data.total} ${data.total === 1 ? 'destination' : 'destinations'}` : ''}
+        {loading && !nearby
+          ? 'Loading destinations'
+          : visibleData
+            ? `${visibleData.items.length} ${visibleData.items.length === 1 ? 'destination' : 'destinations'}${nearby ? ' nearest to you' : ''}`
+            : ''}
       </p>
 
       {error && <ErrorState title="Destinations did not load" error={error} onRetry={retry} />}
@@ -94,7 +160,7 @@ export default function DestinationsPage() {
         </div>
       )}
 
-      {data && data.items.length === 0 && (
+      {visibleData && visibleData.items.length === 0 && (
         <EmptyState
           title="No destination matches that"
           message={
@@ -111,20 +177,22 @@ export default function DestinationsPage() {
         </EmptyState>
       )}
 
-      {data && data.items.length > 0 && (
+      {visibleData && visibleData.items.length > 0 && (
         <>
           <ul className={styles.grid}>
-            {data.items.map((destination) => (
+            {visibleData.items.map((destination) => (
               <li key={destination.id}>
                 <DestinationCard destination={destination} />
               </li>
             ))}
           </ul>
-          <Pager
-            page={data.page}
-            pageCount={Math.ceil(data.total / data.limit)}
-            onChange={(next) => updateParams({ page: next > 1 ? String(next) : '' })}
-          />
+          {!nearby && (
+            <Pager
+              page={data.page}
+              pageCount={Math.ceil(data.total / data.limit)}
+              onChange={(next) => updateParams({ page: next > 1 ? String(next) : '' })}
+            />
+          )}
         </>
       )}
     </div>

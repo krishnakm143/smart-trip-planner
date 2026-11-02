@@ -1,9 +1,20 @@
-import { Search } from 'lucide-react'
+import { LocateFixed, Search, X } from 'lucide-react'
+import Button from '../../components/ui/Button'
 import Chip from '../../components/ui/Chip'
 import { CATEGORIES } from '../../utils/constants'
 import styles from './DestinationFilters.module.css'
 
-export default function DestinationFilters({ searchText, onSearchChange, category, onCategoryChange }) {
+export default function DestinationFilters({
+  searchText,
+  onSearchChange,
+  category,
+  onCategoryChange,
+  nearMe,
+  locating,
+  locationError,
+  onLocate,
+  onClearLocation,
+}) {
   return (
     <form className={styles.filters} role="search" onSubmit={(event) => event.preventDefault()}>
       <div className={styles.search}>
@@ -37,6 +48,30 @@ export default function DestinationFilters({ searchText, onSearchChange, categor
           </Chip>
         ))}
       </fieldset>
+
+      <div className={styles.location}>
+        {nearMe ? (
+          <>
+            <p className={styles.locationStatus} role="status">
+              Showing the closest destinations. Your location is not saved.
+            </p>
+            <Button variant="ghost" size="sm" onClick={onClearLocation}>
+              <X aria-hidden="true" />
+              Show all
+            </Button>
+          </>
+        ) : (
+          <Button variant="secondary" size="sm" onClick={onLocate} busy={locating}>
+            <LocateFixed aria-hidden="true" />
+            {locating ? 'Finding you' : 'Near me'}
+          </Button>
+        )}
+        {locationError && (
+          <p className={styles.locationError} role="alert">
+            {locationError}
+          </p>
+        )}
+      </div>
     </form>
   )
 }

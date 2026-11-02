@@ -3,17 +3,26 @@ import { formatDate } from '../../utils/formatDate'
 import ItineraryDay from './ItineraryDay'
 import styles from './Itinerary.module.css'
 
-function StackedDays({ days, baseId }) {
+function StackedDays({ days, baseId, editable, onMoveItem, onRemoveItem, onAddItem, onReorderDay }) {
   return (
     <div className={styles.stack}>
       {days.map((day) => (
-        <ItineraryDay key={day.day} day={day} headingId={`${baseId}-day-${day.day}`} />
+        <ItineraryDay
+          key={day.day}
+          day={day}
+          headingId={`${baseId}-day-${day.day}`}
+          editable={editable}
+          onMoveItem={onMoveItem}
+          onRemoveItem={onRemoveItem}
+          onAddItem={onAddItem}
+          onReorderDay={onReorderDay}
+        />
       ))}
     </div>
   )
 }
 
-function TabbedDays({ days, baseId }) {
+function TabbedDays({ days, baseId, editable, onMoveItem, onRemoveItem, onAddItem, onReorderDay }) {
   const [activeIndex, setActiveIndex] = useState(0)
   const tabRefs = useRef([])
   const active = days[Math.min(activeIndex, days.length - 1)]
@@ -54,14 +63,40 @@ function TabbedDays({ days, baseId }) {
         ))}
       </div>
       <div id={`${baseId}-panel`} role="tabpanel" aria-labelledby={`${baseId}-tab-${active.day}`} tabIndex={0} className={styles.panel}>
-        <ItineraryDay day={active} headingId={`${baseId}-day-${active.day}`} />
+        <ItineraryDay
+          day={active}
+          headingId={`${baseId}-day-${active.day}`}
+          editable={editable}
+          onMoveItem={onMoveItem}
+          onRemoveItem={onRemoveItem}
+          onAddItem={onAddItem}
+          onReorderDay={onReorderDay}
+        />
       </div>
     </>
   )
 }
 
-export default function Itinerary({ days, layout = 'tabs' }) {
+export default function Itinerary({
+  days,
+  layout = 'tabs',
+  editable = false,
+  onMoveItem,
+  onRemoveItem,
+  onAddItem,
+  onReorderDay,
+}) {
   const baseId = useId()
   const Layout = layout === 'stacked' || days.length === 1 ? StackedDays : TabbedDays
-  return <Layout days={days} baseId={baseId} />
+  return (
+    <Layout
+      days={days}
+      baseId={baseId}
+      editable={editable}
+      onMoveItem={onMoveItem}
+      onRemoveItem={onRemoveItem}
+      onAddItem={onAddItem}
+      onReorderDay={onReorderDay}
+    />
+  )
 }

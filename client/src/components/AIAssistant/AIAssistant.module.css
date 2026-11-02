@@ -1,0 +1,110 @@
+.wrapper {
+  background: var(--surface-raised, #ffffff);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  border-radius: var(--radius-lg, 0.75rem);
+  padding: var(--space-4);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-block: var(--space-4);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.title {
+  font-family: var(--font-display, inherit);
+  font-size: var(--text-base, 1rem);
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.quickChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: var(--space-3);
+}
+
+.chipBtn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chipBtn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.chatHistory {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 22rem;
+  overflow-y: auto;
+  padding: var(--space-2);
+  background: #f8fafc;
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid #f1f5f9;
+  margin-bottom: var(--space-3);
+}
+
+.userMsg {
+  align-self: flex-end;
+  background: var(--primary, #0284c7);
+  color: #ffffff;
+  padding: 0.5rem 0.85rem;
+  border-radius: 1rem 1rem 0.2rem 1rem;
+  font-size: var(--text-sm, 0.875rem);
+  max-width: 85%;
+  line-height: 1.4;
+}
+
+.assistantMsg {
+  align-self: flex-start;
+  background: #ffffff;
+  color: #1e293b;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem 1rem 1rem 0.2rem;
+  font-size: var(--text-sm, 0.875rem);
+  max-width: 95%;
+  line-height: 1.5;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.assistantMsg p {
+  margin-bottom: 0.5rem;
+}
+
+.assistantMsg p:last-child {
+  margin-bottom: 0;
+}
+
+.assistantMsg ul,
+.assistantMsg ol {
+  padding-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.inputBar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.inputBar input {
+  flex: 1;
+  font-size: var(--text-sm, 0.875rem);
+}

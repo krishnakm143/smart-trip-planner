@@ -5,12 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Plan a day-wise itinerary and an honest budget for twelve Indian destinations." />
     <meta name="theme-color" content="#0e5e5a" />
+    <!-- Preconnect to external API providers for faster resource loading -->
+    <link rel="preconnect" href="https://api.groq.com" crossorigin />
+    <link rel="preconnect" href="https://tile.openstreetmap.org" />
+    <link rel="preconnect" href="https://nominatim.openstreetmap.org" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.json" />
     <title>Smart Trip Planner</title>
   </head>
   <body>
+    <!-- Skip to main content for keyboard / screen-reader users -->
+    <a href="#main-content" class="skip-link" style="position: absolute; top: -9999px; left: -9999px;">Skip to main content</a>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- Service worker management: register in production, clean up in dev -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (const r of registrations) r.unregister()
+          })
+        } else {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').catch(() => {})
+          })
+        }
+      }
+    </script>
   </body>
 </html>

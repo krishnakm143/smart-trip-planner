@@ -1,0 +1,17 @@
+{
+  "name": "smart-trip-planner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Smart Trip Planner - AI-assisted trip itineraries with Google Places and Supabase",
+  "scripts": {
+    "start": "npm --prefix server start",
+    "server": "npm --prefix server run dev",
+    "client": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "lint": "npm --prefix server run lint && npm --prefix client run lint",
+    "test": "npm --prefix server test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -11,6 +11,13 @@
   color: var(--danger);
 }
 
+.notice {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--accent);
+  background: var(--paper-deep);
+  color: var(--ink-soft);
+}
+
 .submit {
   margin-top: var(--space-2);
 }
@@ -38,4 +45,146 @@
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.fieldHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.forgotLink {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: var(--text-xs);
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-family: inherit;
+}
+
+.forgotLink:hover,
+.forgotLink:focus-visible {
+  color: var(--accent-strong);
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(27, 42, 43, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: fadeIn 0.15s ease-out;
+}
+
+.modalCard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-raised);
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--space-5);
+  position: relative;
+  animation: slideUp 0.2s ease-out;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.modalTitle {
+  font-size: var(--text-md);
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.modalClose {
+  background: none;
+  border: 0;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalClose:hover {
+  background: var(--paper-deep);
+  color: var(--ink);
+}
+
+.modalSub {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  margin-bottom: var(--space-4);
+  line-height: 1.45;
+}
+
+.passwordWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordWrapper input {
+  padding-right: 2.5rem !important;
+  width: 100%;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: 0;
+  padding: 0.25rem;
+  color: var(--ink-faint);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.passwordToggle:hover {
+  color: var(--ink);
+}
+
+.successBanner {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--success);
+  background: var(--success-tint);
+  color: var(--success);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

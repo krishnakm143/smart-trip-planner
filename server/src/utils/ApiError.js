@@ -6,6 +6,7 @@ const STATUS_BY_CODE = {
   CONFLICT: 409,
   RATE_LIMITED: 429,
   INTERNAL_ERROR: 500,
+  AI_UNAVAILABLE: 503,
 };
 
 export class ApiError extends Error {

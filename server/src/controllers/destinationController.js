@@ -1,3 +1,4 @@
+import { config } from '../config/env.js';
 import * as destinationService from '../services/destinationService.js';
 import { sendSuccess } from '../utils/respond.js';
 
@@ -17,4 +18,18 @@ export async function discover(req, res) {
     req.valid.query.type,
   );
   sendSuccess(res, { items }, { meta: { provider } });
+}
+
+export async function getPlacePhoto(req, res) {
+  const { name } = req.query;
+  if (!name || typeof name !== 'string' || !name.startsWith('places/')) {
+    return res.status(400).json({ status: 'fail', message: 'Valid place photo resource name is required' });
+  }
+  if (!config.googleMapsApiKey) {
+    return res.status(404).json({ status: 'fail', message: 'Google Places API key is not configured' });
+  }
+
+  const photoUrl = `https://places.googleapis.com/v1/${encodeURI(name)}/media?maxHeightPx=800&maxWidthPx=800&key=${config.googleMapsApiKey}`;
+  res.set('Cache-Control', 'public, max-age=86400, s-maxage=86400');
+  return res.redirect(302, photoUrl);
 }

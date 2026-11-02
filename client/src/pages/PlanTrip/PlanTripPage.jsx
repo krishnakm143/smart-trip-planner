@@ -20,11 +20,17 @@ import styles from './PlanTripPage.module.css'
 function defaultValues() {
   const startDate = addDays(todayInputValue(), 14)
   return {
+    origin: '',
+    tripMode: 'couple',
+    members: ['You'],
     destinationId: null,
     startDate,
     endDate: addDays(startDate, 3),
     travelers: 2,
     budgetTier: 'standard',
+    maxBudget: undefined,
+    travelToDestinationCost: undefined,
+    contingencyPercent: undefined,
     interests: [],
     pace: 'balanced',
   }

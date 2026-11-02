@@ -4,7 +4,14 @@ import { requireAuth } from '../middleware/auth.js';
 import { authRateLimiter } from '../middleware/rateLimiter.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { loginSchema, registerSchema } from '../validators/authValidators.js';
+import {
+  loginSchema,
+  registerSchema,
+  sendOtpSchema,
+  verifyOtpSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '../validators/authValidators.js';
 
 const router = Router();
 
@@ -20,6 +27,30 @@ router.post(
   authRateLimiter,
   validate({ body: loginSchema }),
   asyncHandler(authController.login),
+);
+router.post(
+  '/otp/send',
+  authRateLimiter,
+  validate({ body: sendOtpSchema }),
+  asyncHandler(authController.sendOtp),
+);
+router.post(
+  '/otp/verify',
+  authRateLimiter,
+  validate({ body: verifyOtpSchema }),
+  asyncHandler(authController.verifyOtp),
+);
+router.post(
+  '/password/reset-otp',
+  authRateLimiter,
+  validate({ body: forgotPasswordSchema }),
+  asyncHandler(authController.sendPasswordResetOtp),
+);
+router.post(
+  '/password/reset',
+  authRateLimiter,
+  validate({ body: resetPasswordSchema }),
+  asyncHandler(authController.resetPassword),
 );
 router.get('/me', requireAuth, authController.me);
 

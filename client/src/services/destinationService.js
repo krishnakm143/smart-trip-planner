@@ -14,3 +14,6 @@ export const discoverPlaces = (slug, type, signal) =>
       withMeta: true,
     })
     .then(({ data, meta }) => ({ items: data.items, provider: meta.provider }))
+
+export const findNearestDestinations = ({ lat, lng, limit = 6 }, signal) =>
+  apiClient.get('/locations/nearest', { query: { lat, lng, limit }, signal })

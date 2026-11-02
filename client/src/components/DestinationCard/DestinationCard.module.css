@@ -75,6 +75,21 @@
   color: var(--ink-faint);
 }
 
+.distance {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: var(--space-1);
+  color: var(--accent-strong);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.distance svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
 .tagline {
   margin-top: var(--space-2);
   color: var(--ink-soft);

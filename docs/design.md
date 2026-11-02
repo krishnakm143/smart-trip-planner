@@ -168,6 +168,9 @@ destination with real coordinates and realistic fees.
 | days | Number | 1–14 | Inclusive day count |
 | travelers | Number | 1–12 | |
 | budgetTier | String | enum `economy` \| `standard` \| `luxury` | |
+| maxBudget | Number | optional integer, ₹1–₹1,00,00,000 | Whole-trip cap; the generated budget records the remaining or over-budget amount |
+| travelToDestinationCost | Number | optional integer, ₹0–₹10,00,000 | User-supplied group cost for return travel to the destination |
+| contingencyPercent | Number | optional integer, 0–30 | Percentage added after all trip costs to cover unexpected expenses |
 | interests | [String] | subset of activity `type` enum | |
 | pace | String | enum `relaxed` \| `balanced` \| `packed`, default `balanced` | |
 | itinerary | [ItineraryDay] | embedded | See below |
@@ -285,7 +288,7 @@ Invalid ObjectId in a path → 400 `VALIDATION_ERROR`. A trip owned by someone e
 | POST | `/planner/preview` | **PlanInput** | `{ destination: {id,name,slug,state,heroImage}, days, itinerary, budget }`, `meta: { provider }` |
 | POST | `/budget/estimate` | `{ destinationId, days, travelers, budgetTier }` | `{ budget }` (activities = 0) |
 
-**PlanInput** = `{ destinationId, startDate: "YYYY-MM-DD", endDate: "YYYY-MM-DD", travelers, budgetTier, interests?: [], pace?: "balanced" }`.
+**PlanInput** = `{ destinationId, startDate: "YYYY-MM-DD", endDate: "YYYY-MM-DD", travelers, budgetTier, maxBudget?: integer, travelToDestinationCost?: integer, contingencyPercent?: integer, interests?: [], pace?: "balanced" }`. The optional travel cost and contingency are included in the returned and saved total. When a cap is provided, the budget also includes `target`, `difference`, and `isWithinTarget`.
 Rules: `endDate ≥ startDate`, `days = diff + 1 ≤ 14`, `startDate` not in the past.
 
 ### Trips 🔒

@@ -43,3 +43,25 @@
   padding: 0;
   border: 0;
 }
+
+.location {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.locationStatus,
+.locationError {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.locationStatus {
+  color: var(--ink-soft);
+}
+
+.locationError {
+  width: 100%;
+  color: var(--danger);
+}

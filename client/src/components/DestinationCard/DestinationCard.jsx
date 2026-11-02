@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Star } from 'lucide-react'
+import { MapPin, Star } from 'lucide-react'
 import DestinationImage from '../DestinationImage/DestinationImage'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { labelFor } from '../../utils/constants'
@@ -10,7 +10,7 @@ function economyPerPersonPerDay({ economy }) {
 }
 
 export default function DestinationCard({ destination, featured = false }) {
-  const { slug, name, state, category, tagline, heroImage, rating, idealDays, dailyCost } = destination
+  const { slug, name, state, category, tagline, heroImage, rating, idealDays, dailyCost, distanceKm } = destination
 
   return (
     <article className={`${styles.card} ${featured ? styles.featured : ''}`}>
@@ -29,6 +29,11 @@ export default function DestinationCard({ destination, featured = false }) {
             </span>
           </div>
           <p className={styles.state}>{state}</p>
+          {typeof distanceKm === 'number' && (
+            <p className={styles.distance}>
+              <MapPin aria-hidden="true" /> {distanceKm.toLocaleString('en-IN')} km away
+            </p>
+          )}
           <p className={styles.tagline}>{tagline}</p>
           <p className={styles.facts}>
             <span>

@@ -18,8 +18,8 @@ export default function AppRoutes() {
         <Route index element={<HomePage />} />
         <Route path="destinations" element={<DestinationsPage />} />
         <Route path="destinations/:slug" element={<DestinationDetailsPage />} />
-        <Route path="plan" element={<PlanTripPage />} />
         <Route element={<ProtectedRoute />}>
+          <Route path="plan" element={<PlanTripPage />} />
           <Route path="trips" element={<MyTripsPage />} />
           <Route path="trips/:id" element={<TripDetailsPage />} />
         </Route>

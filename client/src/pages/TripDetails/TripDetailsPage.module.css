@@ -37,12 +37,60 @@
 }
 
 @media print {
+  :global(header),
+  :global(footer),
+  .tabNav,
+  :global(button),
+  :global(.no-print) {
+    display: none !important;
+  }
+
   .columns {
     display: block;
-    margin-top: var(--space-5);
+    margin-top: var(--space-4);
   }
 
   .side {
     margin-top: var(--space-6);
+    page-break-before: auto;
   }
+
+  .body {
+    padding-top: 0;
+  }
+}
+
+.tabNav {
+  display: flex;
+  gap: var(--space-2);
+  border-bottom: 2px solid var(--line, #e2e8f0);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-4);
+  overflow-x: auto;
+}
+
+.tabLink {
+  padding: 0.65rem 1rem;
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--ink-soft, #64748b);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.tabLink:hover {
+  color: var(--ink, #0f172a);
+}
+
+.tabLinkActive {
+  color: var(--accent, #0284c7);
+  border-bottom-color: var(--accent, #0284c7);
 }

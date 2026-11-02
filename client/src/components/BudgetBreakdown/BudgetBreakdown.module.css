@@ -34,6 +34,24 @@
   font-weight: 600;
 }
 
+.target {
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.within {
+  background: var(--success-bg, #e7f6ed);
+  color: var(--success-ink, #17653a);
+}
+
+.over {
+  background: var(--warning-bg, #fff2dc);
+  color: var(--warning-ink, #8a4800);
+}
+
 .bar {
   display: flex;
   gap: 2px;
@@ -64,6 +82,14 @@
 
 .activities {
   background: var(--budget-activities);
+}
+
+.intercityTravel {
+  background: #536bb8;
+}
+
+.contingency {
+  background: #b37625;
 }
 
 .table {
@@ -120,6 +146,56 @@
   margin-top: var(--space-4);
   font-size: var(--text-xs);
   color: var(--ink-faint);
+}
+
+.compareBtnWrapper {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--line);
+  text-align: center;
+}
+
+.matrixTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-block: 1rem;
+  font-size: 0.85rem;
+}
+
+.matrixTable th,
+.matrixTable td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+}
+
+.matrixTable th:first-child,
+.matrixTable td:first-child {
+  text-align: left;
+}
+
+.matrixTable thead th {
+  background: #f8fafc;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.activeTierHeader {
+  background: #f0fdf4 !important;
+  color: #15803d;
+}
+
+.activeTierCell {
+  background: #f0fdf4;
+  font-weight: 600;
+  color: #15803d;
+}
+
+.totalRow td {
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-top: 2px solid var(--line);
+  color: var(--ink);
 }
 
 @keyframes grow {

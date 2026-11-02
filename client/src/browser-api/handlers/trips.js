@@ -17,6 +17,8 @@ const toTrip = (trip) => ({ ...trip, destination: destinationOf(trip, { withLoca
 const toTripSummary = (trip) => ({
   id: trip.id,
   title: trip.title,
+  origin: trip.origin ?? '',
+  tripMode: trip.tripMode ?? 'solo',
   destination: destinationOf(trip),
   startDate: trip.startDate,
   endDate: trip.endDate,
@@ -35,7 +37,7 @@ function findOwnedTrip(userId, tripId) {
 }
 
 /** Generates and stores a trip. `routeProvider` is only passed by the first-visit seed. */
-export async function saveTrip(userId, { title, ...planInput }, routeProvider) {
+export async function saveTrip(userId, { title, origin, tripMode, members, packingList, reservations, ...planInput }, routeProvider) {
   const plan = await buildPlan(planInput, routeProvider)
   const now = new Date().toISOString()
 
@@ -47,6 +49,9 @@ export async function saveTrip(userId, { title, ...planInput }, routeProvider) {
         user: userId,
         destination: plan.destination.id,
         title: title ?? defaultTitle(plan.days, plan.destination.name),
+        origin: origin ?? '',
+        tripMode: tripMode ?? 'solo',
+        members: members && members.length > 0 ? members : ['Me'],
         startDate: plan.startDate,
         endDate: plan.endDate,
         days: plan.days,
@@ -56,6 +61,8 @@ export async function saveTrip(userId, { title, ...planInput }, routeProvider) {
         pace: planInput.pace,
         itinerary: plan.itinerary,
         budget: plan.budget,
+        packingList: packingList ?? [],
+        reservations: reservations ?? [],
         status: 'planned',
         notes: '',
         createdAt: now,
@@ -107,4 +114,33 @@ export function remove({ token, params }) {
 
   trips.replace(trips.all().filter((trip) => trip.id !== id))
   return { data: { id } }
+}
+
+export function duplicate({ token, params }) {
+  const user = requireUser(token)
+  const original = findOwnedTrip(user.id, params.id)
+  const now = new Date().toISOString()
+  const duplicated = {
+    ...JSON.parse(JSON.stringify(original)),
+    id: randomId(),
+    user: user.id,
+    title: `Copy of ${original.title}`.slice(0, 80),
+    status: 'planned',
+    createdAt: now,
+    updatedAt: now,
+  }
+  trips.insert(duplicated)
+  return { status: 201, data: { trip: toTrip(duplicated) } }
+}
+
+export function emailTrip({ token, params, body }) {
+  const user = requireUser(token)
+  const trip = findOwnedTrip(user.id, params.id)
+  const targetEmail = body?.email || user.email
+  return {
+    data: {
+      message: `Trip plan for ${trip.title} sent to ${targetEmail}!`,
+      sent: true,
+    },
+  }
 }

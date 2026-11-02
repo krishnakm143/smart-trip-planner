@@ -28,3 +28,40 @@
   display: grid;
   gap: var(--space-4);
 }
+
+.analyticsBar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: var(--radius-md, 0.5rem);
+  margin: var(--space-4) 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--ink-soft, #64748b);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+.statValue {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--ink, #0f172a);
+  margin-top: 0.2rem;
+}
+
+.statSub {
+  font-size: 0.75rem;
+  color: var(--ink-soft, #64748b);
+}

@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
-    passwordHash: { type: String, required: true, select: false },
+    passwordHash: { type: String, required: false, select: false },
     role: { type: String, enum: USER_ROLES, default: 'traveler' },
   },
   { timestamps: true },

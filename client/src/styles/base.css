@@ -49,6 +49,27 @@ ol {
 img {
   display: block;
   max-width: 100%;
+  /* Lazy-load all images by default; override with loading="eager" for LCP heroes */
+  content-visibility: auto;
+}
+
+/* Skip-to-content link for keyboard / screen-reader accessibility */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--gutter);
+  z-index: 9999;
+  padding: 0.5rem 1rem;
+  background: var(--accent);
+  color: var(--on-accent);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.15s var(--ease);
+}
+
+.skip-link:focus {
+  top: 0;
 }
 
 a {

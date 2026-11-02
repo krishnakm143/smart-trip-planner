@@ -11,6 +11,26 @@ export async function login(req, res) {
   sendSuccess(res, session);
 }
 
+export async function sendOtp(req, res) {
+  const result = await authService.sendOtp(req.valid.body.email);
+  sendSuccess(res, result);
+}
+
+export async function verifyOtp(req, res) {
+  const session = await authService.verifyOtp(req.valid.body);
+  sendSuccess(res, session);
+}
+
+export async function sendPasswordResetOtp(req, res) {
+  const result = await authService.sendPasswordResetOtp(req.valid.body.email);
+  sendSuccess(res, result);
+}
+
+export async function resetPassword(req, res) {
+  const result = await authService.resetPassword(req.valid.body);
+  sendSuccess(res, result);
+}
+
 export function me(req, res) {
   sendSuccess(res, { user: authService.toPublicUser(req.user) });
 }

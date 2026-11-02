@@ -10,6 +10,7 @@ const FIELD_MASK = [
   'places.location',
   'places.rating',
   'places.types',
+  'places.photos',
 ].join(',');
 
 async function searchPlaces(apiKey, destination, type) {
@@ -35,15 +36,26 @@ async function searchPlaces(apiKey, destination, type) {
 
   return (body.places ?? [])
     .filter((place) => place.displayName?.text && place.location)
-    .map((place) => ({
-      name: place.displayName.text,
-      type: mapGoogleTypes(place.types, type),
-      location: { lat: place.location.latitude, lng: place.location.longitude },
-      rating: place.rating ?? null,
-      address: place.formattedAddress ?? '',
-      externalId: place.id,
-      source: 'google',
-    }));
+    .map((place) => {
+      const item = {
+        name: place.displayName.text,
+        type: mapGoogleTypes(place.types, type),
+        location: { lat: place.location.latitude, lng: place.location.longitude },
+        rating: place.rating ?? null,
+        address: place.formattedAddress ?? '',
+        externalId: place.id,
+        source: 'google',
+      };
+      if (place.photos && place.photos.length > 0 && place.photos[0].name) {
+        item.photos = place.photos.map((p) => ({
+          name: p.name,
+          widthPx: p.widthPx,
+          heightPx: p.heightPx,
+        }));
+        item.photoUrl = `/api/v1/destinations/places/photo?name=${encodeURIComponent(place.photos[0].name)}`;
+      }
+      return item;
+    });
 }
 
 export function createGooglePlacesProvider({ apiKey, fallback }) {

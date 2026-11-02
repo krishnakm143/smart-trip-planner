@@ -24,6 +24,7 @@ const collection = (name) => ({
 
 export const users = collection('users')
 export const trips = collection('trips')
+export const expenses = collection('expenses')
 
 export const sessions = {
   userIdFor: (token) => read('sessions', {})[token] ?? null,

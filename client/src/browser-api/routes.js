@@ -1,6 +1,8 @@
 import { ApiError } from '@server/utils/ApiError.js'
 import * as auth from './handlers/auth'
 import * as destinations from './handlers/destinations'
+import * as expenses from './handlers/expenses'
+import * as locations from './handlers/locations'
 import * as planner from './handlers/planner'
 import * as trips from './handlers/trips'
 
@@ -8,16 +10,30 @@ import * as trips from './handlers/trips'
 const ROUTES = [
   ['POST', '/auth/register', auth.register],
   ['POST', '/auth/login', auth.login],
+  ['POST', '/auth/otp/send', auth.sendOtp],
+  ['POST', '/auth/otp/verify', auth.verifyOtp],
+  ['POST', '/auth/password/reset-otp', auth.sendPasswordResetOtp],
+  ['POST', '/auth/password/reset', auth.resetPassword],
   ['GET', '/auth/me', auth.me],
   ['GET', '/destinations', destinations.list],
   ['GET', '/destinations/:slug', destinations.details],
   ['GET', '/destinations/:slug/discover', destinations.discover],
+  ['GET', '/locations/nearest', locations.nearest],
   ['POST', '/planner/preview', planner.preview],
+  ['POST', '/planner/recommend', planner.recommend],
   ['POST', '/trips', trips.create],
   ['GET', '/trips', trips.list],
   ['GET', '/trips/:id', trips.get],
   ['PATCH', '/trips/:id', trips.update],
   ['DELETE', '/trips/:id', trips.remove],
+  ['POST', '/trips/:id/duplicate', trips.duplicate],
+  ['POST', '/trips/:id/email', trips.emailTrip],
+  ['POST', '/trips/:id/assistant', planner.assistant],
+  ['GET', '/trips/:id/expenses', expenses.list],
+  ['GET', '/trips/:id/expenses/summary', expenses.summary],
+  ['POST', '/trips/:id/expenses', expenses.create],
+  ['PATCH', '/trips/:id/expenses/:expenseId', expenses.update],
+  ['DELETE', '/trips/:id/expenses/:expenseId', expenses.remove],
 ]
 
 function matchPath(pattern, path) {

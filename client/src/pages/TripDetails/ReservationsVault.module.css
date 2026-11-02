@@ -1,0 +1,143 @@
+.wrapper {
+  background: var(--surface-raised, #ffffff);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  border-radius: var(--radius-lg, 0.75rem);
+  padding: var(--space-5);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-block: var(--space-4);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.title {
+  font-family: var(--font-display, inherit);
+  font-size: var(--text-lg, 1.125rem);
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.resList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.resCard {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  border-radius: var(--radius-md, 0.5rem);
+  padding: var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+  transition: all 0.15s ease;
+}
+
+.resCard:hover {
+  border-color: var(--primary, #0284c7);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.resHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 0.25rem;
+}
+
+.resTypeBadge {
+  font-size: 0.6875rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.resTitle {
+  font-size: var(--text-base, 1rem);
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+}
+
+.resDetails {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--text-secondary, #64748b);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: 0.35rem;
+}
+
+.confirmationBox {
+  font-family: monospace;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0f172a;
+  background: #f8fafc;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  border: 1px dashed #cbd5e1;
+}
+
+.statusConfirmed {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.statusTentative {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.statusCancelled {
+  color: #ef4444;
+  font-weight: 600;
+  text-decoration: line-through;
+}
+
+.deleteBtn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.35rem;
+  border-radius: var(--radius-sm, 0.25rem);
+}
+
+.deleteBtn:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+.formBox {
+  background: var(--surface, #f8fafc);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  border-radius: var(--radius-md, 0.5rem);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-2);
+}

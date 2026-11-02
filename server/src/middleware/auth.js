@@ -1,5 +1,4 @@
-import { verifyToken } from '../services/authService.js';
-import { User } from '../models/User.js';
+import { authenticateToken } from '../services/authService.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
@@ -9,12 +8,9 @@ export const requireAuth = asyncHandler(async (req, _res, next) => {
     throw ApiError.unauthorized();
   }
 
-  const payload = verifyToken(token);
-  const user = await User.findById(payload.sub);
-  if (!user) {
-    throw ApiError.unauthorized('Account no longer exists');
-  }
-
-  req.user = user;
+  req.user = await authenticateToken(token);
+  // Supabase trip storage uses this verified user token to let Postgres RLS
+  // enforce ownership. It is never returned in an API response or persisted.
+  req.accessToken = token;
   next();
 });

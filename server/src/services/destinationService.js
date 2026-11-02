@@ -1,11 +1,21 @@
 import { Activity } from '../models/Activity.js';
 import { Destination } from '../models/Destination.js';
+import { isDbConnected } from '../config/db.js';
 import { placesProvider } from '../providers/index.js';
 import { ApiError } from '../utils/ApiError.js';
+import {
+  findCatalogueDestination,
+  getCatalogueActivities,
+  searchCatalogueDestinations,
+} from './catalogueService.js';
 
 const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-export async function listDestinations({ search, category, page, limit }) {
+export async function listDestinations({ search, category, page = 1, limit = 12 }) {
+  if (!isDbConnected()) {
+    return searchCatalogueDestinations({ search, category, page, limit });
+  }
+
   const filter = {};
   if (category) filter.category = category;
   if (search) {
@@ -25,24 +35,44 @@ export async function listDestinations({ search, category, page, limit }) {
 }
 
 export async function getDestinationById(id) {
-  const destination = await Destination.findById(id);
-  if (!destination) throw ApiError.notFound('Destination not found');
-  return destination;
+  if (isDbConnected()) {
+    try {
+      const destination = await Destination.findById(id);
+      if (destination) return destination;
+    } catch {
+      // Cast error or not an ObjectId; fallback to catalog lookup below
+    }
+  }
+
+  const fallback = findCatalogueDestination(id);
+  if (!fallback) throw ApiError.notFound('Destination not found');
+  return fallback;
 }
 
 async function getDestinationBySlug(slug) {
-  const destination = await Destination.findOne({ slug });
-  if (!destination) throw ApiError.notFound('Destination not found');
-  return destination;
+  if (isDbConnected()) {
+    const destination = await Destination.findOne({ slug });
+    if (destination) return destination;
+  }
+
+  const fallback = findCatalogueDestination(slug);
+  if (!fallback) throw ApiError.notFound('Destination not found');
+  return fallback;
 }
 
 export async function getDestinationDetails(slug) {
   const destination = await getDestinationBySlug(slug);
-  const activities = await Activity.find({ destination: destination.id }).sort({
+
+  if (!isDbConnected()) {
+    const activities = getCatalogueActivities(destination.slug || slug);
+    return { destination, activities };
+  }
+
+  const activities = await Activity.find({ destination: destination.id || destination._id }).sort({
     rating: -1,
     name: 1,
   });
-  return { destination, activities };
+  return { destination, activities: activities.length > 0 ? activities : getCatalogueActivities(slug) };
 }
 
 export async function discoverPlaces(slug, type) {

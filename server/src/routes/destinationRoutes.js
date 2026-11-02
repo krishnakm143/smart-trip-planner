@@ -16,6 +16,10 @@ router.get(
   asyncHandler(destinationController.list),
 );
 router.get(
+  '/places/photo',
+  asyncHandler(destinationController.getPlacePhoto),
+);
+router.get(
   '/:slug',
   validate({ params: slugParamSchema }),
   asyncHandler(destinationController.getBySlug),

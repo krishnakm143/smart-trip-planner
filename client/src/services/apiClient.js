@@ -1,3 +1,5 @@
+import { supabase } from './supabaseClient'
+
 // Same-origin behind the dev proxy; an absolute URL when the API is hosted elsewhere.
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api/v1'
 const TOKEN_KEY = 'stp.token'
@@ -17,6 +19,15 @@ export const tokenStore = {
   get: () => localStorage.getItem(TOKEN_KEY),
   set: (token) => localStorage.setItem(TOKEN_KEY, token),
   clear: () => localStorage.removeItem(TOKEN_KEY),
+  async getAccessToken() {
+    if (!supabase) return this.get()
+    try {
+      const { data } = await supabase.auth.getSession()
+      return data?.session?.access_token || this.get()
+    } catch {
+      return this.get()
+    }
+  },
 }
 
 let unauthorizedHandler = null
@@ -58,7 +69,7 @@ async function readJson(response) {
  * `{ data, meta }` for endpoints that report which provider answered.
  */
 async function request(path, { method = 'GET', body, query, signal, withMeta = false } = {}) {
-  const token = tokenStore.get()
+  const token = await tokenStore.getAccessToken()
   const headers = { Accept: 'application/json' }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (token) headers.Authorization = `Bearer ${token}`

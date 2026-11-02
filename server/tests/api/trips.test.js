@@ -89,6 +89,13 @@ describe('POST /trips', () => {
     expect(saved.body.data.trip.budget).toEqual(previewed.body.data.budget);
   });
 
+  it('persists an optional whole-trip budget assessment', async () => {
+    const response = await createTrip(owner, { maxBudget: 1000 });
+
+    expect(response.status).toBe(201);
+    expect(response.body.data.trip.budget).toMatchObject({ target: 1000, isWithinTarget: false });
+  });
+
   it('validates the plan input', async () => {
     const response = await createTrip(owner, { travelers: 40 });
 
