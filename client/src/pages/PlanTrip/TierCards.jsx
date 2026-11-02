@@ -2,26 +2,49 @@ import { formatCurrency } from '../../utils/formatCurrency'
 import { BUDGET_TIERS } from '../../utils/constants'
 import styles from './TierCards.module.css'
 
-function costPerDay(cost, travelers) {
-  if (!cost) return 0
-  const rooms = Math.ceil(travelers / 2)
-  return (cost.stay ?? 0) * rooms + ((cost.food ?? 0) + (cost.transport ?? 0)) * travelers
-}
-
-export default function TierCards({ value, error, dailyCost, travelers, onChange, maxBudget, days = 3 }) {
-  const groupLabel = travelers === 1 ? 'a day for 1 traveller' : `a day for ${travelers} travellers`
-
+export default function TierCards({
+  value,
+  error,
+  dailyCost,
+  travelers = 2,
+  onChange,
+  maxBudget,
+  days = 3,
+  scenarios = null,
+}) {
   return (
     <fieldset className={styles.group} aria-describedby={error ? 'tier-error' : undefined}>
-      <legend className="visually-hidden">Budget tier</legend>
+      <legend className="visually-hidden">Budget tier comparison</legend>
       <div className={styles.cards}>
         {BUDGET_TIERS.map((tier) => {
+          const scenario = scenarios?.find((s) => s.tier === tier.value)
           const cost = dailyCost?.[tier.value] || (tier.value === 'economy' ? dailyCost?.budget : undefined)
-          const dailyTotal = cost ? costPerDay(cost, travelers) : 0
-          const tripTotal = dailyTotal * days
+
+          const rooms = Math.ceil(travelers / 2)
+          const nights = Math.max(days - 1, 1)
+
+          // If scenario is available, use scenario totals; otherwise calculate using standard formula
+          const dailyTotal = scenario
+            ? scenario.dailyTotal
+            : cost
+              ? cost.stay * rooms + (cost.food + cost.transport) * travelers
+              : 0
+          const tripTotal = scenario ? scenario.total : dailyTotal * days
+          const perPerson = scenario ? scenario.perPerson : Math.round(tripTotal / Math.max(1, travelers))
+
+          const stayCost = scenario ? scenario.breakdown.stay : (cost?.stay ?? 0) * rooms * nights
+          const foodCost = scenario ? scenario.breakdown.food : (cost?.food ?? 0) * travelers * days
+          const transportCost = scenario ? scenario.breakdown.transport : (cost?.transport ?? 0) * travelers * days
+          const activitiesCost = scenario ? scenario.breakdown.activities : 0
+
+          const isAchievable = scenario ? scenario.isAchievable : maxBudget ? tripTotal <= maxBudget : true
+          const diff = maxBudget !== undefined && maxBudget !== null ? maxBudget - tripTotal : null
 
           return (
-            <label key={tier.value} className={styles.card}>
+            <label
+              key={tier.value}
+              className={`${styles.card} ${value === tier.value ? styles.cardActive : ''}`}
+            >
               <input
                 type="radio"
                 name="budgetTier"
@@ -30,37 +53,67 @@ export default function TierCards({ value, error, dailyCost, travelers, onChange
                 checked={value === tier.value}
                 onChange={() => onChange(tier.value)}
               />
-              <span className={styles.name}>{tier.label}</span>
-              {cost ? (
-                <>
-                  <span className={`${styles.price} numeric`}>{formatCurrency(dailyTotal)}</span>
-                  <span className={styles.basis}>{groupLabel}</span>
-                  <span className={styles.parts}>
-                    Room {formatCurrency(cost.stay ?? 0)} a night. Food and transport{' '}
-                    {formatCurrency((cost.food ?? 0) + (cost.transport ?? 0))} per person.
+
+              <div className={styles.cardHeader}>
+                <span className={styles.name}>{tier.label}</span>
+                {maxBudget && scenario?.target ? (
+                  <span className={styles.targetPill}>
+                    Target ~{formatCurrency(scenario.target)} ({Math.round(scenario.targetRatio * 100)}%)
                   </span>
-                  {maxBudget ? (
-                    <span
-                      style={{
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        padding: '0.15rem 0.45rem',
-                        borderRadius: '4px',
-                        marginTop: '0.35rem',
-                        display: 'inline-block',
-                        background: tripTotal <= maxBudget ? '#dcfce7' : '#fee2e2',
-                        color: tripTotal <= maxBudget ? '#15803d' : '#b91c1c',
-                      }}
+                ) : null}
+              </div>
+
+              {cost || scenario ? (
+                <>
+                  <div className={styles.priceContainer}>
+                    <span className={`${styles.price} numeric`}>{formatCurrency(tripTotal)}</span>
+                    <span className={styles.totalBadge}>total for {days} {days === 1 ? 'day' : 'days'}</span>
+                  </div>
+
+                  <span className={styles.basis}>
+                    {formatCurrency(dailyTotal)}/day · {formatCurrency(perPerson)}/person
+                  </span>
+
+                  {/* Transparent Cost Breakdown */}
+                  <div className={styles.breakdownGrid}>
+                    <div className={styles.breakdownItem}>
+                      <span className={styles.breakdownLabel}>Stay ({nights}n)</span>
+                      <span className={styles.breakdownValue}>{formatCurrency(stayCost)}</span>
+                    </div>
+                    <div className={styles.breakdownItem}>
+                      <span className={styles.breakdownLabel}>Food</span>
+                      <span className={styles.breakdownValue}>{formatCurrency(foodCost)}</span>
+                    </div>
+                    <div className={styles.breakdownItem}>
+                      <span className={styles.breakdownLabel}>Transport</span>
+                      <span className={styles.breakdownValue}>{formatCurrency(transportCost)}</span>
+                    </div>
+                    <div className={styles.breakdownItem}>
+                      <span className={styles.breakdownLabel}>Activities</span>
+                      <span className={styles.breakdownValue}>
+                        {activitiesCost > 0 ? formatCurrency(activitiesCost) : 'Free/minimal'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {maxBudget !== undefined && maxBudget !== null && maxBudget > 0 ? (
+                    <div
+                      className={`${styles.diffBadge} ${
+                        isAchievable ? styles.diffBadgeSuccess : styles.diffBadgeDanger
+                      }`}
                     >
-                      {tripTotal <= maxBudget
-                        ? `✓ Fits budget (saves ${formatCurrency(maxBudget - tripTotal)})`
-                        : `Exceeds by ${formatCurrency(tripTotal - maxBudget)}`}
-                    </span>
+                      {isAchievable ? (
+                        <>✓ Fits budget ({diff > 0 ? `saves ${formatCurrency(diff)}` : 'exact match'})</>
+                      ) : (
+                        <>⚠️ Exceeds budget by {formatCurrency(Math.abs(diff))}</>
+                      )}
+                    </div>
                   ) : null}
                 </>
               ) : (
-                <span className={styles.basis}>Choose a destination to see daily costs.</span>
+                <span className={styles.basis}>Choose a destination to see costs.</span>
               )}
+
               <span className={styles.summary}>{tier.summary}</span>
             </label>
           )

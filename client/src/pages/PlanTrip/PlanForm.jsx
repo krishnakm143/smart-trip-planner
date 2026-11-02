@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Sparkles, Compass, Check } from 'lucide-react'
+import { Sparkles, Compass } from 'lucide-react'
 import Button from '../../components/ui/Button'
 import Chip from '../../components/ui/Chip'
 import Field from '../../components/ui/Field'
@@ -8,6 +8,7 @@ import { addDays, countDaysInclusive, todayInputValue } from '../../utils/format
 import { ACTIVITY_TYPES, LIMITS } from '../../utils/constants'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { recommendDestinations } from '../../services/tripService'
+import { assessBudgetFeasibility } from '@server/services/budgetService.js'
 import FormSection from './FormSection'
 import PaceSelector from './PaceSelector'
 import TierCards from './TierCards'
@@ -90,34 +91,20 @@ export default function PlanForm({ values, errors, destinations, selectedDestina
     }
   }
 
-  // Calculate scenario totals if dates and destination are selected
+  // Calculate deterministic comparison scenarios & feasibility when destination is selected
   const tripDays = countDaysInclusive(values.startDate, values.endDate) || 3
-  const rooms = Math.ceil((values.travelers || 2) / 2)
-  const travelCost = values.travelToDestinationCost || 0
-
-  const economyCost = selectedDestination?.dailyCost?.economy || selectedDestination?.dailyCost?.budget
-  const standardCost = selectedDestination?.dailyCost?.standard
-  const luxuryCost = selectedDestination?.dailyCost?.luxury
-
-  const scenarios = economyCost && standardCost && luxuryCost
-    ? [
-        {
-          tier: 'economy',
-          title: 'Economical',
-          total: ((economyCost.stay ?? 0) * rooms + ((economyCost.food ?? 0) + (economyCost.transport ?? 0)) * values.travelers) * tripDays + travelCost,
-        },
-        {
-          tier: 'standard',
-          title: 'Standard',
-          total: ((standardCost.stay ?? 0) * rooms + ((standardCost.food ?? 0) + (standardCost.transport ?? 0)) * values.travelers) * tripDays + travelCost,
-        },
-        {
-          tier: 'luxury',
-          title: 'Premium',
-          total: ((luxuryCost.stay ?? 0) * rooms + ((luxuryCost.food ?? 0) + (luxuryCost.transport ?? 0)) * values.travelers) * tripDays + travelCost,
-        },
-      ]
+  const feasibility = selectedDestination?.dailyCost
+    ? assessBudgetFeasibility({
+        dailyCost: selectedDestination.dailyCost,
+        days: tripDays,
+        travelers: values.travelers || 2,
+        maxBudget: values.maxBudget,
+        travelToDestinationCost: values.travelToDestinationCost || 0,
+        contingencyPercent: values.contingencyPercent || 0,
+      })
     : null
+
+  const scenarios = feasibility?.scenarios ?? null
 
   return (
     <form className={styles.form} onSubmit={handleSubmit} noValidate>
@@ -303,7 +290,7 @@ export default function PlanForm({ values, errors, destinations, selectedDestina
                     const standardTotal = scenarios.find((s) => s.tier === 'standard')?.total || Infinity
                     if (num >= luxuryTotal) changes.budgetTier = 'luxury'
                     else if (num >= standardTotal) changes.budgetTier = 'standard'
-                    else changes.budgetTier = 'budget'
+                    else changes.budgetTier = 'economy'
                   }
                   onChange(changes)
                 }}
@@ -335,7 +322,7 @@ export default function PlanForm({ values, errors, destinations, selectedDestina
                     const standardTotal = scenarios.find((s) => s.tier === 'standard')?.total || Infinity
                     if (amt >= luxuryTotal) changes.budgetTier = 'luxury'
                     else if (amt >= standardTotal) changes.budgetTier = 'standard'
-                    else changes.budgetTier = 'budget'
+                    else changes.budgetTier = 'economy'
                   }
                   onChange(changes)
                 }}
@@ -345,22 +332,79 @@ export default function PlanForm({ values, errors, destinations, selectedDestina
             ))}
           </div>
 
-          {values.maxBudget && scenarios && (
-            <div style={{ marginTop: '0.6rem', fontSize: '0.825rem', padding: '0.5rem 0.75rem', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '4px', color: '#0369a1' }}>
-              {(() => {
-                const luxuryTotal = scenarios.find((s) => s.tier === 'luxury')?.total || 0
-                const standardTotal = scenarios.find((s) => s.tier === 'standard')?.total || 0
-                const budgetTotal = scenarios.find((s) => s.tier === 'economy' || s.tier === 'budget')?.total || 0
-                if (values.maxBudget >= luxuryTotal) {
-                  return `✨ Your ₹${values.maxBudget.toLocaleString('en-IN')} budget comfortably covers Premium/Luxury stays (~${formatCurrency(luxuryTotal)}).`
-                } else if (values.maxBudget >= standardTotal) {
-                  return `✨ Your ₹${values.maxBudget.toLocaleString('en-IN')} budget matches Standard tier (~${formatCurrency(standardTotal)}), leaving ~${formatCurrency(values.maxBudget - standardTotal)} buffer.`
-                } else if (values.maxBudget >= budgetTotal) {
-                  return `✨ Your ₹${values.maxBudget.toLocaleString('en-IN')} budget matches Economical tier (~${formatCurrency(budgetTotal)}).`
-                } else {
-                  return `⚠️ Your ₹${values.maxBudget.toLocaleString('en-IN')} budget is below the minimum economical estimate (~${formatCurrency(budgetTotal)}). We will optimize stops to stay as close as possible.`
-                }
-              })()}
+          {values.maxBudget && feasibility && (
+            <div
+              style={{
+                marginTop: '0.75rem',
+                fontSize: '0.825rem',
+                padding: '0.65rem 0.85rem',
+                borderRadius: '6px',
+                border: '1px solid',
+                lineHeight: 1.45,
+                background:
+                  feasibility.status === 'feasible'
+                    ? '#f0fdf4'
+                    : feasibility.status === 'tight'
+                      ? '#eff6ff'
+                      : '#fef2f2',
+                borderColor:
+                  feasibility.status === 'feasible'
+                    ? '#bbf7d0'
+                    : feasibility.status === 'tight'
+                      ? '#bfdbfe'
+                      : '#fecaca',
+                color:
+                  feasibility.status === 'feasible'
+                    ? '#166534'
+                    : feasibility.status === 'tight'
+                      ? '#1e40af'
+                      : '#991b1b',
+              }}
+            >
+              <div style={{ fontWeight: 600 }}>
+                {feasibility.status === 'feasible' && (
+                  <>✨ Feasible: Your ₹{values.maxBudget.toLocaleString('en-IN')} budget comfortably covers a Standard trip (~{formatCurrency(feasibility.standardCost)}), leaving ~{formatCurrency(feasibility.buffer)} buffer.</>
+                )}
+                {feasibility.status === 'tight' && (
+                  <>⚖️ Budget is Tight: Your ₹{values.maxBudget.toLocaleString('en-IN')} budget fits an Economical trip (~{formatCurrency(feasibility.minimumCost)}) with ~{formatCurrency(feasibility.buffer)} margin. Free & affordable stops will be prioritized.</>
+                )}
+                {feasibility.status === 'insufficient' && (
+                  <>⚠️ Insufficient Budget: Your ₹{values.maxBudget.toLocaleString('en-IN')} budget is below the minimum economical estimate (~{formatCurrency(feasibility.minimumCost)}) for {tripDays} days and {values.travelers} {values.travelers === 1 ? 'traveller' : 'travellers'} in {selectedDestination?.name || 'this destination'}. Shortfall: {formatCurrency(feasibility.shortfall)}.</>
+                )}
+              </div>
+
+              {feasibility.status === 'insufficient' && feasibility.alternatives?.length > 0 && (
+                <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#991b1b' }}>Suggested options to fit:</span>
+                  {feasibility.alternatives.map((alt) => (
+                    <button
+                      key={alt.type}
+                      type="button"
+                      style={{
+                        padding: '0.2rem 0.55rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        background: '#ffffff',
+                        border: '1px solid #ef4444',
+                        color: '#991b1b',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => {
+                        if (alt.type === 'reduce_days') {
+                          onChange({ endDate: addDays(values.startDate, alt.days - 1) })
+                        } else if (alt.type === 'solo_trip') {
+                          onChange({ travelers: 1, tripMode: 'solo' })
+                        } else if (alt.type === 'adjust_budget') {
+                          onChange({ maxBudget: alt.targetBudget })
+                        }
+                      }}
+                    >
+                      {alt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -372,34 +416,9 @@ export default function PlanForm({ values, errors, destinations, selectedDestina
           travelers={values.travelers}
           maxBudget={values.maxBudget}
           days={tripDays}
+          scenarios={scenarios}
           onChange={(budgetTier) => onChange({ budgetTier })}
         />
-
-        {scenarios && (
-          <div className={styles.scenarioBox}>
-            <div style={{ fontSize: '0.825rem', fontWeight: 600, color: 'var(--ink-soft)' }}>
-              Budget Comparison Scenarios ({tripDays} days, {values.travelers} {values.travelers === 1 ? 'traveller' : 'travellers'}):
-            </div>
-            <div className={styles.scenarioGrid}>
-              {scenarios.map((s) => (
-                <button
-                  key={s.tier}
-                  type="button"
-                  className={`${styles.scenarioCard} ${values.budgetTier === s.tier ? styles.scenarioCardActive : ''}`}
-                  onClick={() => onChange({ budgetTier: s.tier })}
-                >
-                  <div className={styles.scenarioTitle}>{s.title}</div>
-                  <div className={styles.scenarioPrice}>{formatCurrency(s.total)}</div>
-                  {values.budgetTier === s.tier && (
-                    <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '0.2rem', fontWeight: 600 }}>
-                      <Check size={12} style={{ display: 'inline', verticalAlign: 'middle' }} /> Selected
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* <div className={styles.dates}>
           <Field label="Travel to destination (optional)" error={errors.travelToDestinationCost} hint="Return flights, trains, or other travel for the whole group.">

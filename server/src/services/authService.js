@@ -217,6 +217,7 @@ export async function verifyOtp({ email, code }) {
       if (linkRes.ok) {
         const linkData = await linkRes.json();
         if (linkData.hashed_token) {
+          const verifyType = linkData.verification_type || 'magiclink';
           const verifyRes = await fetch(`${config.supabaseUrl}/auth/v1/verify`, {
             method: 'POST',
             headers: {
@@ -224,7 +225,7 @@ export async function verifyOtp({ email, code }) {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              type: 'magiclink',
+              type: verifyType,
               token_hash: linkData.hashed_token,
             }),
           });
@@ -250,6 +251,7 @@ export async function verifyOtp({ email, code }) {
   if (!memUser) {
     const defaultName = email.split('@')[0];
     let resolvedName = defaultName.charAt(0).toUpperCase() + defaultName.slice(1);
+    let id = null;
 
     if (config.supabaseUrl && config.supabaseServiceRoleKey && !config.isTest) {
       try {
@@ -264,13 +266,33 @@ export async function verifyOtp({ email, code }) {
           const found = uData.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase());
           const suName = found?.user_metadata?.name || found?.user_metadata?.full_name;
           if (suName) resolvedName = suName;
+          if (found?.id) id = found.id;
+        }
+        if (!id) {
+          const createRes = await fetch(`${config.supabaseUrl}/auth/v1/admin/users`, {
+            method: 'POST',
+            headers: {
+              apikey: config.supabasePublishableKey || config.supabaseAnonKey,
+              Authorization: `Bearer ${config.supabaseServiceRoleKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email,
+              email_confirm: true,
+              user_metadata: { name: resolvedName },
+            }),
+          });
+          if (createRes.ok) {
+            const createdData = await createRes.json();
+            if (createdData?.id) id = createdData.id;
+          }
         }
       } catch {
-        // Fallback to email capitalized
+        // Fallback to randomUUID
       }
     }
 
-    const id = crypto.randomUUID();
+    if (!id) id = crypto.randomUUID();
     memUser = { id, name: resolvedName, email, role: 'traveler', createdAt: new Date().toISOString() };
     memoryUsers.set(email, memUser);
     memoryUsers.set(id, memUser);

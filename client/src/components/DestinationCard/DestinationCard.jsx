@@ -5,12 +5,15 @@ import { formatCurrency } from '../../utils/formatCurrency'
 import { labelFor } from '../../utils/constants'
 import styles from './DestinationCard.module.css'
 
-function economyPerPersonPerDay({ economy }) {
-  return Math.round(economy.stay / 2) + economy.food + economy.transport
+function economyPerPersonPerDay(dailyCost) {
+  const economy = dailyCost?.economy || dailyCost?.budget
+  if (!economy) return 0
+  return Math.round((economy.stay || 0) / 2) + (economy.food || 0) + (economy.transport || 0)
 }
 
-export default function DestinationCard({ destination, featured = false }) {
+export default function DestinationCard({ destination, featured = false, headingLevel = 'h2' }) {
   const { slug, name, state, category, tagline, heroImage, rating, idealDays, dailyCost, distanceKm } = destination
+  const HeadingTag = headingLevel
 
   return (
     <article className={`${styles.card} ${featured ? styles.featured : ''}`}>
@@ -21,7 +24,7 @@ export default function DestinationCard({ destination, featured = false }) {
         </div>
         <div className={styles.body}>
           <div className={styles.heading}>
-            <h3 className={styles.name}>{name}</h3>
+            <HeadingTag className={styles.name}>{name}</HeadingTag>
             <span className={styles.rating}>
               <Star aria-hidden="true" />
               <span className="visually-hidden">Rated</span>

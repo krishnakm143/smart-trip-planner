@@ -17,7 +17,7 @@ export default function AppLayout() {
         Skip to content
       </a>
       <Header />
-      <main id="main" className={styles.main}>
+      <main id="main" tabIndex="-1" className={styles.main}>
         <Outlet />
       </main>
       <Footer />

@@ -1,4 +1,8 @@
-import { estimateBudget } from '@server/services/budgetService.js'
+import {
+  assessBudgetFeasibility,
+  calculateComparisonScenarios,
+  estimateBudget,
+} from '@server/services/budgetService.js'
 import { generateItinerary, sumEntryFees } from '@server/services/itineraryService.js'
 import { deriveOptimalTier } from '@server/services/plannerService.js'
 import { daysBetweenInclusive, parseDateOnly } from '@server/utils/time.js'
@@ -18,20 +22,22 @@ export async function buildPlan(
   const start = parseDateOnly(startDate)
   const end = parseDateOnly(endDate)
   const days = daysBetweenInclusive(start, end)
+  const activities = activitiesOf(destination.id)
+
+  const resolvedTier =
+    maxBudget && maxBudget > 0
+      ? deriveOptimalTier(destination.dailyCost, days, travelers, maxBudget, travelToDestinationCost, activities)
+      : (budgetTier || 'standard')
 
   const { itinerary, provider } = await generateItinerary({
-    activities: activitiesOf(destination.id),
+    activities,
     days,
     pace,
     interests,
     startDate: start,
     routeProvider,
+    budgetTier: resolvedTier,
   })
-
-  const resolvedTier =
-    budgetTier && budgetTier !== 'auto'
-      ? budgetTier
-      : deriveOptimalTier(destination.dailyCost, days, travelers, maxBudget, travelToDestinationCost)
 
   const budget = estimateBudget({
     dailyCost: destination.dailyCost,
@@ -57,9 +63,54 @@ export async function buildPlan(
         perPerson: Math.round((subtotal + contingency) / travelers),
       }
     : budget
-  const budgetWithTarget = maxBudget === undefined
-    ? budgetWithExtras
-    : { ...budgetWithExtras, target: maxBudget, difference: maxBudget - budgetWithExtras.total, isWithinTarget: budgetWithExtras.total <= maxBudget }
 
-  return { destination, startDate: start, endDate: end, days, itinerary, budget: budgetWithTarget, provider }
+  const targetProps =
+    maxBudget !== undefined
+      ? {
+          target: maxBudget,
+          targetBudget: maxBudget,
+          difference: maxBudget - budgetWithExtras.total,
+          remainingBudget: maxBudget - budgetWithExtras.total,
+          isWithinTarget: budgetWithExtras.total <= maxBudget,
+          isOverBudget: budgetWithExtras.total > maxBudget,
+        }
+      : {}
+
+  const budgetWithTarget = {
+    ...budgetWithExtras,
+    ...targetProps,
+  }
+
+  const scenarios = calculateComparisonScenarios({
+    dailyCost: destination.dailyCost,
+    days,
+    travelers,
+    maxBudget,
+    travelToDestinationCost,
+    contingencyPercent,
+    activities,
+  })
+
+  const feasibility = assessBudgetFeasibility({
+    dailyCost: destination.dailyCost,
+    days,
+    travelers,
+    maxBudget,
+    travelToDestinationCost,
+    contingencyPercent,
+    activities,
+  })
+
+  return {
+    destination,
+    startDate: start,
+    endDate: end,
+    days,
+    itinerary,
+    budget: budgetWithTarget,
+    budgetTier: resolvedTier,
+    provider,
+    scenarios,
+    feasibility,
+  }
 }

@@ -12,12 +12,15 @@ export async function preview(req, res) {
       days: plan.days,
       itinerary: plan.itinerary,
       budget: plan.budget,
+      scenarios: plan.scenarios,
+      feasibility: plan.feasibility,
+      budgetTier: plan.budgetTier,
     },
     { meta: { provider: plan.provider } },
   );
 }
 
 export async function estimateBudget(req, res) {
-  const budget = await plannerService.estimateDestinationBudget(req.valid.body);
-  sendSuccess(res, { budget });
+  const result = await plannerService.estimateDestinationBudget(req.valid.body);
+  sendSuccess(res, result);
 }

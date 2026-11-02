@@ -54,7 +54,7 @@ export default function ExpenseTracker({ trip }) {
 
   const fetchSummary = useCallback(() => {
     getExpenseSummary(trip.id)
-      .then((res) => setSummaryData(res.data))
+      .then((res) => setSummaryData(res?.data || res))
       .catch(() => {})
   }, [trip.id])
 
@@ -65,7 +65,11 @@ export default function ExpenseTracker({ trip }) {
   const selectedCurrencyObj = CURRENCIES.find((c) => c.code === currency) || CURRENCIES[0]
   const convertedInrAmount = Math.round((Number(rawAmount) || 0) * selectedCurrencyObj.rate)
 
-  const totalSpent = expenses?.reduce((sum, item) => sum + item.amount, 0) ?? 0
+  const expenseList = Array.isArray(expenses)
+    ? expenses
+    : (Array.isArray(expenses?.items) ? expenses.items : [])
+
+  const totalSpent = expenseList.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
   const tripBudgetTotal = trip.budget?.total ?? 0
   const percentUsed = tripBudgetTotal > 0 ? Math.min(Math.round((totalSpent / tripBudgetTotal) * 100), 100) : 0
   const remaining = tripBudgetTotal - totalSpent
@@ -91,7 +95,7 @@ export default function ExpenseTracker({ trip }) {
       }
 
       const item = await createExpense(trip.id, payload)
-      setData((items) => [item, ...(items || [])])
+      setData((items) => [item, ...(Array.isArray(items) ? items : (items?.items || []))])
       notify(`Expense added: ${item.title}`)
       setRawAmount('')
       setForm({
@@ -115,7 +119,7 @@ export default function ExpenseTracker({ trip }) {
   async function handleDelete(expenseId, title) {
     try {
       await deleteExpense(trip.id, expenseId)
-      setData((items) => items.filter((entry) => entry.id !== expenseId))
+      setData((items) => (Array.isArray(items) ? items : (items?.items || [])).filter((entry) => entry.id !== expenseId))
       notify(`Deleted "${title}"`)
       fetchSummary()
     } catch (err) {
@@ -135,10 +139,10 @@ export default function ExpenseTracker({ trip }) {
     )
   }
 
-  const categoryTotals = expenses?.reduce((acc, item) => {
-    acc[item.category] = (acc[item.category] || 0) + item.amount
+  const categoryTotals = expenseList.reduce((acc, item) => {
+    acc[item.category] = (acc[item.category] || 0) + (Number(item.amount) || 0)
     return acc
-  }, {}) ?? {}
+  }, {})
 
   const settlements = summaryData?.settlements || []
 
@@ -198,10 +202,10 @@ export default function ExpenseTracker({ trip }) {
         {/* Category Breakdown Cards */}
         <div className={styles.categoryGrid}>
           {EXPENSE_CATEGORIES.map((cat) => {
-            const amt = categoryTotals[cat] || 0
+            const amt = categoryTotals[cat.value] || 0
             return (
-              <div key={cat} className={styles.categoryCard}>
-                <span className={styles.categoryLabel}>{cat}</span>
+              <div key={cat.value} className={styles.categoryCard}>
+                <span className={styles.categoryLabel}>{cat.label}</span>
                 <span className={styles.categoryAmount}>{formatCurrency(amt)}</span>
               </div>
             )
@@ -317,8 +321,8 @@ export default function ExpenseTracker({ trip }) {
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
               >
                 {EXPENSE_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c.charAt(0).toUpperCase() + c.slice(1)}
+                  <option key={c.value} value={c.value}>
+                    {c.label}
                   </option>
                 ))}
               </select>
@@ -387,18 +391,18 @@ export default function ExpenseTracker({ trip }) {
       )}
 
       {/* Expense History List */}
-      {expenses && expenses.length === 0 ? (
+      {expenseList.length === 0 ? (
         <p style={{ color: 'var(--ink-soft)', fontSize: '0.875rem', textAlign: 'center', marginBlock: '1rem' }}>
           No expenses recorded yet. Click &ldquo;Add Expense&rdquo; to track your real travel spending!
         </p>
       ) : (
         <ul className={styles.expenseList}>
-          {expenses?.map((item) => (
+          {expenseList.map((item) => (
             <li key={item.id} className={styles.expenseItem}>
               <div className={styles.expenseMain}>
                 <span className={styles.expenseTitle}>{item.title}</span>
                 <div className={styles.expenseMeta}>
-                  <span className={styles.badge}>{item.category}</span>
+                  <span className={styles.badge}>{labelFor(item.category)}</span>
                   <span>{item.spentOn}</span>
                   {item.paidBy && item.paidBy !== 'Me' && <span>Paid by {item.paidBy}</span>}
                   {item.paymentMethod && <span>via {labelFor(item.paymentMethod)}</span>}

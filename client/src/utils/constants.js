@@ -111,4 +111,8 @@ const labelIndex = new Map(
   ].map((option) => [option.value, option.label]),
 )
 
-export const labelFor = (value) => labelIndex.get(value) ?? value
+export const labelFor = (value) => {
+  if (!value) return ''
+  if (typeof value === 'object') return value.label ?? value.value ?? String(value)
+  return labelIndex.get(value) ?? value
+}

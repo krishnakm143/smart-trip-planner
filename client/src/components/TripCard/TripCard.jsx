@@ -119,7 +119,7 @@ export default function TripCard({ trip, onDuplicated }) {
           <Copy size={13} />
           <span>{copying ? 'Duplicating…' : 'Duplicate'}</span>
         </button>
-        <Link to={`/trips/${trip.id}`} className={styles.actionBtn} style={{ background: '#0284c7', color: '#ffffff', borderColor: '#0284c7' }}>
+        <Link to={`/trips/${trip.id}`} className={styles.actionBtn} style={{ background: '#0369a1', color: '#ffffff', borderColor: '#0369a1' }}>
           <span>Open Plan</span>
           <ArrowRight size={13} />
         </Link>

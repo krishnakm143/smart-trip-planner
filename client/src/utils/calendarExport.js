@@ -4,9 +4,9 @@
  */
 
 function formatIcsDateTime(dateStr, timeStr) {
-  // dateStr is 'YYYY-MM-DD', timeStr is 'HH:MM'
-  const dateClean = dateStr.replace(/-/g, '')
-  const timeClean = timeStr ? timeStr.replace(/:/g, '') + '00' : '090000'
+  // dateStr is 'YYYY-MM-DD' or ISO timestamp, timeStr is 'HH:MM'
+  const dateClean = String(dateStr || '').slice(0, 10).replace(/-/g, '')
+  const timeClean = timeStr ? String(timeStr).slice(0, 5).replace(/:/g, '') + '00' : '090000'
   return `${dateClean}T${timeClean}`
 }
 

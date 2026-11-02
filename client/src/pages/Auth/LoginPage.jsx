@@ -498,17 +498,15 @@ export default function LoginPage() {
             )}
           </Field>
           <Field
-            label={
-              <span className={styles.fieldHeader}>
-                <span>Password</span>
-                <button
-                  type="button"
-                  className={styles.forgotLink}
-                  onClick={openForgotModal}
-                >
-                  Forgot password?
-                </button>
-              </span>
+            label="Password"
+            action={
+              <button
+                type="button"
+                className={styles.forgotLink}
+                onClick={openForgotModal}
+              >
+                Forgot password?
+              </button>
             }
             error={errors.password}
           >

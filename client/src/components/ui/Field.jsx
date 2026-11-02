@@ -5,16 +5,25 @@ import styles from './Field.module.css'
  * Label, hint and error wiring for a single control. `children` is a render
  * function that receives the ids and aria attributes the control needs.
  */
-export default function Field({ label, hint, error, children }) {
+export default function Field({ label, action, hint, error, children }) {
   const id = useId()
   const hintId = hint ? `${id}-hint` : undefined
   const errorId = error ? `${id}-error` : undefined
 
   return (
     <div className={styles.field}>
-      <label className={styles.label} htmlFor={id}>
-        {label}
-      </label>
+      {action ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+          <label className={styles.label} htmlFor={id} style={{ marginBottom: 0 }}>
+            {label}
+          </label>
+          {action}
+        </div>
+      ) : (
+        <label className={styles.label} htmlFor={id}>
+          {label}
+        </label>
+      )}
       {children({
         id,
         'aria-invalid': error ? true : undefined,

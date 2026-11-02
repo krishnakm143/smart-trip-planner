@@ -123,16 +123,45 @@ export async function generateItinerary({
   interests = [],
   startDate,
   routeProvider,
+  budgetTier = 'standard',
 }) {
   const matrix = await routeProvider.getMatrix(activities.map((activity) => activity.location));
-  const capacity = HOURS_PER_DAY[pace];
+  const capacity = HOURS_PER_DAY[pace] ?? HOURS_PER_DAY.balanced;
 
-  let pool = activities
-    .map((activity, index) => ({
-      ...activity,
-      index,
-      score: (activity.rating ?? 0) + (interests.includes(activity.type) ? INTEREST_BONUS : 0),
-    }))
+  // For economy tier, filter out optional expensive activities (> ₹200) if affordable alternatives exist
+  let eligibleActivities = activities;
+  if (budgetTier === 'economy') {
+    const affordable = activities.filter((a) => (a.entryFee ?? 0) <= 200);
+    if (affordable.length >= 2) {
+      eligibleActivities = affordable;
+    }
+  }
+
+  let pool = eligibleActivities
+    .map((activity, index) => {
+      let score = (activity.rating ?? 0) + (interests.includes(activity.type) ? INTEREST_BONUS : 0);
+
+      // Tailor activities to the traveller's budget:
+      if (budgetTier === 'economy') {
+        // Budget-friendly: prioritize free and pocket-friendly attractions
+        if ((activity.entryFee ?? 0) === 0) {
+          score += 2.0;
+        } else if (activity.entryFee <= 100) {
+          score += 1.0;
+        }
+      } else if (budgetTier === 'luxury') {
+        // Luxury: include premier attractions, exclusive sights and experiences
+        if ((activity.entryFee ?? 0) > 0) {
+          score += 0.5;
+        }
+      }
+
+      return {
+        ...activity,
+        index,
+        score,
+      };
+    })
     .sort(byScoreThenName);
 
   const itinerary = [];

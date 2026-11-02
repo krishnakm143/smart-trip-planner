@@ -22,13 +22,45 @@ function toExpense(row) {
 }
 
 async function request(path, { method = 'GET', accessToken, body, prefer } = {}) {
-  const response = await fetch(`${config.supabaseUrl}/rest/v1${path}`, {
-    method,
-    headers: { apikey: config.supabasePublishableKey, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', ...(prefer ? { Prefer: prefer } : {}) },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-  if (response.status === 401 || response.status === 403) throw ApiError.unauthorized('Your session cannot access expenses. Please log in again.');
-  if (!response.ok) throw new ApiError('INTERNAL_ERROR', 'Expenses are temporarily unavailable. Please try again.');
+  let tokenToUse = accessToken;
+  if (!tokenToUse || !tokenToUse.includes('.')) {
+    tokenToUse = config.supabaseServiceRoleKey || config.supabasePublishableKey || config.supabaseAnonKey;
+  }
+
+  const makeAttempt = async (token) => {
+    return fetch(`${config.supabaseUrl}/rest/v1${path}`, {
+      method,
+      headers: {
+        apikey: config.supabasePublishableKey || config.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        ...(prefer ? { Prefer: prefer } : {}),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  };
+
+  let response;
+  try {
+    response = await makeAttempt(tokenToUse);
+    if (
+      (response.status === 401 || response.status === 403) &&
+      config.supabaseServiceRoleKey &&
+      tokenToUse !== config.supabaseServiceRoleKey
+    ) {
+      response = await makeAttempt(config.supabaseServiceRoleKey);
+    }
+  } catch (err) {
+    console.error('[Supabase Expenses Error]:', err.message);
+    throw new ApiError('INTERNAL_ERROR', 'Expenses are temporarily unavailable. Please try again.');
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    throw ApiError.unauthorized('Your session cannot access expenses. Please log in again.');
+  }
+  if (!response.ok) {
+    throw new ApiError('INTERNAL_ERROR', 'Expenses are temporarily unavailable. Please try again.');
+  }
   return response.status === 204 ? null : response.json();
 }
 

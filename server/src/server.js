@@ -4,19 +4,16 @@ import { config } from './config/env.js';
 import { providerName } from './providers/index.js';
 
 async function start() {
-  if (config.mongodbUri) {
-    try {
-      await connectDb(config.mongodbUri);
-      console.log('Database connected: MongoDB');
-    } catch (err) {
-      if (config.tripStorage === 'supabase') {
-        console.warn(`MongoDB not reached (${err.message}). Running with Supabase PostgreSQL as primary database.`);
-      } else {
-        throw err;
-      }
-    }
-  } else if (config.tripStorage === 'supabase') {
+  if (config.tripStorage === 'supabase') {
     console.log('Operating with Supabase PostgreSQL database and Supabase Auth');
+    if (config.mongodbUri) {
+      connectDb(config.mongodbUri)
+        .then(() => console.log('Database connected: MongoDB (catalog cache)'))
+        .catch(() => {});
+    }
+  } else if (config.mongodbUri) {
+    await connectDb(config.mongodbUri);
+    console.log('Database connected: MongoDB');
   }
 
   const server = createApp().listen(config.port, () => {

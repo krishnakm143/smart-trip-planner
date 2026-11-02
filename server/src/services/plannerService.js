@@ -3,7 +3,12 @@ import { isDbConnected } from '../config/db.js';
 import { getCatalogueActivities } from './catalogueService.js';
 import { routeProvider } from '../providers/index.js';
 import { daysBetweenInclusive, parseDateOnly } from '../utils/time.js';
-import { estimateBudget } from './budgetService.js';
+import {
+  assessBudgetFeasibility,
+  calculateComparisonScenarios,
+  calculateTierActivityEstimate,
+  estimateBudget,
+} from './budgetService.js';
 import { getDestinationById } from './destinationService.js';
 import { generateItinerary, sumEntryFees } from './itineraryService.js';
 
@@ -55,19 +60,20 @@ function applyBudgetOptions(budget, { maxBudget, travelToDestinationCost, contin
   };
 }
 
-export function deriveOptimalTier(dailyCost, days, travelers, maxBudget, travelToDestinationCost = 0) {
+export function deriveOptimalTier(dailyCost, days, travelers, maxBudget, travelToDestinationCost = 0, activities = []) {
   if (!maxBudget || maxBudget <= 0) return 'standard';
 
   const travel = travelToDestinationCost || 0;
   const tiers = ['luxury', 'standard', 'economy'];
 
   for (const tier of tiers) {
+    const activityFees = calculateTierActivityEstimate(activities, tier, days);
     const est = estimateBudget({
       dailyCost,
       tier,
       days,
       travelers,
-      activityFeesPerPerson: 500,
+      activityFeesPerPerson: activityFees,
     });
     const totalWithTravel = est.total + travel;
     if (totalWithTravel <= maxBudget) {
@@ -105,23 +111,25 @@ export async function buildPlan({
     activities = getCatalogueActivities(destination.slug || destination.id);
   }
 
+  const plannableActivities = activities.map(toPlannable);
   const start = parseDateOnly(startDate);
   const end = parseDateOnly(endDate);
   const days = daysBetweenInclusive(start, end);
 
+  const resolvedTier =
+    maxBudget && maxBudget > 0
+      ? deriveOptimalTier(destination.dailyCost, days, travelers, maxBudget, travelToDestinationCost, plannableActivities)
+      : (budgetTier || 'standard');
+
   const { itinerary, provider } = await generateItinerary({
-    activities: activities.map(toPlannable),
+    activities: plannableActivities,
     days,
     pace,
     interests,
     startDate: start,
     routeProvider,
+    budgetTier: resolvedTier,
   });
-
-  const resolvedTier =
-    budgetTier !== undefined
-      ? budgetTier
-      : deriveOptimalTier(destination.dailyCost, days, travelers, maxBudget, travelToDestinationCost);
 
   const budget = estimateBudget({
     dailyCost: destination.dailyCost,
@@ -133,16 +141,113 @@ export async function buildPlan({
 
   const budgetWithTarget = applyBudgetOptions(budget, { maxBudget, travelToDestinationCost, contingencyPercent, travelers });
 
-  return { destination, startDate: start, endDate: end, days, itinerary, budget: budgetWithTarget, budgetTier: resolvedTier, provider };
-}
-
-export async function estimateDestinationBudget({ destinationId, days, travelers, budgetTier }) {
-  const destination = await getDestinationById(destinationId);
-  return estimateBudget({
+  const scenarios = calculateComparisonScenarios({
     dailyCost: destination.dailyCost,
-    tier: budgetTier,
     days,
     travelers,
-    activityFeesPerPerson: 0,
+    maxBudget,
+    travelToDestinationCost,
+    contingencyPercent,
+    activities: plannableActivities,
   });
+
+  const feasibility = assessBudgetFeasibility({
+    dailyCost: destination.dailyCost,
+    days,
+    travelers,
+    maxBudget,
+    travelToDestinationCost,
+    contingencyPercent,
+    activities: plannableActivities,
+  });
+
+  return {
+    destination,
+    startDate: start,
+    endDate: end,
+    days,
+    itinerary,
+    budget: budgetWithTarget,
+    budgetTier: resolvedTier,
+    provider,
+    scenarios,
+    feasibility,
+  };
+}
+
+export async function estimateDestinationBudget({
+  destinationId,
+  days,
+  travelers,
+  budgetTier = 'standard',
+  maxBudget,
+  travelToDestinationCost = 0,
+  contingencyPercent = 0,
+}) {
+  const destination = await getDestinationById(destinationId);
+  let activities = [];
+
+  if (isDbConnected()) {
+    try {
+      activities = await Activity.find({ destination: destination.id || destination._id }).lean();
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!activities || activities.length === 0) {
+    activities = getCatalogueActivities(destination.slug || destination.id);
+  }
+
+  const plannable = activities.map(toPlannable);
+  const resolvedTier =
+    maxBudget && maxBudget > 0
+      ? deriveOptimalTier(destination.dailyCost, days, travelers, maxBudget, travelToDestinationCost, plannable)
+      : (budgetTier || 'standard');
+
+  const scenarios = calculateComparisonScenarios({
+    dailyCost: destination.dailyCost,
+    days,
+    travelers,
+    maxBudget,
+    travelToDestinationCost,
+    contingencyPercent,
+    activities: plannable,
+  });
+
+  const feasibility = assessBudgetFeasibility({
+    dailyCost: destination.dailyCost,
+    days,
+    travelers,
+    maxBudget,
+    travelToDestinationCost,
+    contingencyPercent,
+    activities: plannable,
+  });
+
+  const activityFeesPerPerson = maxBudget ? calculateTierActivityEstimate(plannable, resolvedTier, days) : 0;
+  const baseBudget = estimateBudget({
+    dailyCost: destination.dailyCost,
+    tier: resolvedTier,
+    days,
+    travelers,
+    activityFeesPerPerson,
+  });
+
+  const hasExtras = maxBudget !== undefined || travelToDestinationCost || contingencyPercent;
+  const budget = hasExtras
+    ? applyBudgetOptions(baseBudget, {
+        maxBudget,
+        travelToDestinationCost,
+        contingencyPercent,
+        travelers,
+      })
+    : baseBudget;
+
+  return {
+    budget,
+    scenarios,
+    feasibility,
+    budgetTier: resolvedTier,
+  };
 }

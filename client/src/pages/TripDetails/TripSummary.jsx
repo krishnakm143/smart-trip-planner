@@ -1,15 +1,18 @@
 import { formatDateRange } from '../../utils/formatDate'
+import { formatCurrency } from '../../utils/formatCurrency'
 import { labelFor } from '../../utils/constants'
 import styles from './TripSummary.module.css'
 
 export default function TripSummary({ trip }) {
   const nights = trip.budget?.nights ?? Math.max(trip.days - 1, 1)
+  const targetBudget = trip.budget?.target ?? trip.budget?.targetBudget ?? trip.maxBudget
   const facts = [
     { label: 'Dates', value: formatDateRange(trip.startDate, trip.endDate) },
     { label: 'Length', value: `${trip.days} ${trip.days === 1 ? 'day' : 'days'}, ${nights} ${nights === 1 ? 'night' : 'nights'}` },
     { label: 'Travellers', value: `${trip.travelers} (${labelFor(trip.tripMode || 'solo')})` },
     ...(trip.origin ? [{ label: 'Origin', value: trip.origin }] : []),
     { label: 'Budget tier', value: labelFor(trip.budgetTier) },
+    ...(targetBudget ? [{ label: 'Target budget', value: formatCurrency(targetBudget) }] : []),
     { label: 'Pace', value: labelFor(trip.pace) },
     { label: 'Interests', value: trip.interests?.length > 0 ? trip.interests.map(labelFor).join(', ') : 'No preference' },
     ...(trip.destination?.bestSeason ? [{ label: 'Best Season', value: trip.destination.bestSeason }] : []),
@@ -20,7 +23,7 @@ export default function TripSummary({ trip }) {
       {facts.map((fact) => (
         <div key={fact.label}>
           <dt>{fact.label}</dt>
-          <dd>{fact.value}</dd>
+          <dd>{typeof fact.value === 'object' && fact.value !== null ? (fact.value.label ?? fact.value.value ?? '') : fact.value}</dd>
         </div>
       ))}
     </dl>

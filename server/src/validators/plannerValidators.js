@@ -74,5 +74,8 @@ export const budgetEstimateSchema = z.object({
   destinationId: objectId,
   days: z.number().int().min(1).max(MAX_TRIP_DAYS),
   travelers,
-  budgetTier: z.enum(BUDGET_TIERS),
+  budgetTier: z.enum(BUDGET_TIERS).optional(),
+  maxBudget,
+  travelToDestinationCost,
+  contingencyPercent,
 });
