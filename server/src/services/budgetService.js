@@ -257,3 +257,31 @@ export function assessBudgetFeasibility({
     scenarios,
   };
 }
+
+/**
+ * Derives the optimal achievable budget tier for a given target budget.
+ */
+export function deriveOptimalTier(dailyCost, days, travelers, maxBudget, travelToDestinationCost = 0, activities = []) {
+  if (!maxBudget || maxBudget <= 0) return 'standard';
+
+  const travel = travelToDestinationCost || 0;
+  const tiers = ['luxury', 'standard', 'economy'];
+
+  for (const tier of tiers) {
+    const activityFeesPerPerson = calculateTierActivityEstimate(activities, tier, days);
+    const est = estimateBudget({
+      dailyCost,
+      tier,
+      days,
+      travelers,
+      activityFeesPerPerson,
+    });
+    const totalWithTravel = est.total + travel;
+    if (totalWithTravel <= maxBudget) {
+      return tier;
+    }
+  }
+
+  return 'economy';
+}
+

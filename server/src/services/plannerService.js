@@ -7,10 +7,13 @@ import {
   assessBudgetFeasibility,
   calculateComparisonScenarios,
   calculateTierActivityEstimate,
+  deriveOptimalTier,
   estimateBudget,
 } from './budgetService.js';
 import { getDestinationById } from './destinationService.js';
 import { generateItinerary, sumEntryFees } from './itineraryService.js';
+
+export { deriveOptimalTier };
 
 const toPlannable = (activity) => ({
   id: String(activity._id || activity.id),
@@ -58,30 +61,6 @@ function applyBudgetOptions(budget, { maxBudget, travelToDestinationCost, contin
       : {}),
     ...targetProps,
   };
-}
-
-export function deriveOptimalTier(dailyCost, days, travelers, maxBudget, travelToDestinationCost = 0, activities = []) {
-  if (!maxBudget || maxBudget <= 0) return 'standard';
-
-  const travel = travelToDestinationCost || 0;
-  const tiers = ['luxury', 'standard', 'economy'];
-
-  for (const tier of tiers) {
-    const activityFees = calculateTierActivityEstimate(activities, tier, days);
-    const est = estimateBudget({
-      dailyCost,
-      tier,
-      days,
-      travelers,
-      activityFeesPerPerson: activityFees,
-    });
-    const totalWithTravel = est.total + travel;
-    if (totalWithTravel <= maxBudget) {
-      return tier;
-    }
-  }
-
-  return 'economy';
 }
 
 export async function buildPlan({

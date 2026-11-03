@@ -1,10 +1,10 @@
 import {
   assessBudgetFeasibility,
   calculateComparisonScenarios,
+  deriveOptimalTier,
   estimateBudget,
 } from '@server/services/budgetService.js'
 import { generateItinerary, sumEntryFees } from '@server/services/itineraryService.js'
-import { deriveOptimalTier } from '@server/services/plannerService.js'
 import { daysBetweenInclusive, parseDateOnly } from '@server/utils/time.js'
 import { activitiesOf, findDestinationById } from './catalogue'
 import { routeProvider as defaultRouteProvider } from './providers'

@@ -84,10 +84,47 @@ async function request(path, { method = 'GET', body, query, signal, withMeta = f
     })
   } catch (cause) {
     if (cause.name === 'AbortError') throw cause
-    throw new ApiError({ status: 0, code: 'NETWORK_ERROR', message: UNREACHABLE_MESSAGE })
+    try {
+      browserApi ??= import('../browser-api/browserFetch')
+      const { browserFetch } = await browserApi
+      response = await browserFetch(buildUrl(path, query), {
+        method,
+        headers,
+        signal,
+        body: body === undefined ? undefined : JSON.stringify(body),
+      })
+    } catch {
+      throw new ApiError({ status: 0, code: 'NETWORK_ERROR', message: UNREACHABLE_MESSAGE })
+    }
   }
 
-  const payload = await readJson(response)
+  let payload = await readJson(response)
+
+  // Fallback to browser catalogue if remote server failed for read-only / discovery routes
+  if (
+    !response.ok &&
+    (path.startsWith('/destinations') ||
+      path.startsWith('/locations') ||
+      path.startsWith('/planner') ||
+      path.startsWith('/budget'))
+  ) {
+    try {
+      browserApi ??= import('../browser-api/browserFetch')
+      const { browserFetch } = await browserApi
+      const fallbackResponse = await browserFetch(buildUrl(path, query), {
+        method,
+        headers,
+        signal,
+        body: body === undefined ? undefined : JSON.stringify(body),
+      })
+      if (fallbackResponse.ok) {
+        response = fallbackResponse
+        payload = await readJson(fallbackResponse)
+      }
+    } catch {
+      // Continue with normal error handling below
+    }
+  }
 
   // The dev proxy answers with an empty 5xx when nothing is listening behind it.
   if (!payload && response.status >= 500) {

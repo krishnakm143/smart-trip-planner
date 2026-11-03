@@ -232,3 +232,16 @@ export async function deleteTrip(user, id, accessToken) {
   if (!rows?.[0]) throw ApiError.notFound('Trip not found');
   return rows[0].id;
 }
+
+export async function createInvitation() {
+  throw ApiError.badRequest('Trip invitations are not supported in Supabase storage mode');
+}
+
+export async function listInvitations() {
+  return [];
+}
+
+export async function acceptInvitation() {
+  throw ApiError.badRequest('Trip invitations are not supported in Supabase storage mode');
+}
+
