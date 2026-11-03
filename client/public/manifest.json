@@ -1,7 +1,7 @@
 {
   "name": "Smart Trip Planner",
   "short_name": "TripPlanner",
-  "description": "Plan a day-wise itinerary and an honest budget for twelve Indian destinations.",
+  "description": "Plan a day-wise itinerary and an honest budget for destinations across India & beyond.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f3eee3",

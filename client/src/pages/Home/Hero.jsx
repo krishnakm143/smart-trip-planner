@@ -81,7 +81,7 @@ export default function Hero() {
       <div className={styles.copy}>
         <h1 className={styles.headline}>Know your days and your rupees before you leave home.</h1>
         <p className={styles.lede}>
-          Choose one of twelve Indian destinations and tell us your dates, group size and budget. You get a
+          Choose any destination across India & beyond, or search live via Google Places API, and tell us your dates, group size and budget. You get a
           day-wise itinerary ordered to cut down on driving, and a cost estimate split into stay, food,
           transport and entry fees.
         </p>

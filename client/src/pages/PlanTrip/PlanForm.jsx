@@ -8,6 +8,7 @@ import { addDays, countDaysInclusive, todayInputValue } from '../../utils/format
 import { ACTIVITY_TYPES, LIMITS } from '../../utils/constants'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { recommendDestinations } from '../../services/tripService'
+import { createDynamicDestination, searchExternalDestinations } from '../../services/destinationService'
 import { assessBudgetFeasibility } from '@server/services/budgetService.js'
 import FormSection from './FormSection'
 import PaceSelector from './PaceSelector'
@@ -29,11 +30,53 @@ const TRIP_MODES_LIST = [
   { key: 'group', label: 'Group Tour', icon: '🚌', defaultTravelers: 8 },
 ]
 
-export default function PlanForm({ values, errors, destinations, selectedDestination, busy, onChange, onSubmit }) {
+export default function PlanForm({ values, errors, destinations, selectedDestination, busy, onChange, onAddDestination, onSubmit }) {
   const today = todayInputValue()
   const [recoms, setRecoms] = useState(null)
   const [recomLoading, setRecomLoading] = useState(false)
   const [tripmatesText, setTripmatesText] = useState(() => (values.members || []).filter((m) => m !== 'You').join(', '))
+
+  const [showLiveSearch, setShowLiveSearch] = useState(false)
+  const [liveQuery, setLiveQuery] = useState('')
+  const [liveResults, setLiveResults] = useState([])
+  const [liveSearching, setLiveSearching] = useState(false)
+  const [liveError, setLiveError] = useState('')
+
+  async function handleLiveSearch() {
+    if (!liveQuery.trim() || liveQuery.trim().length < 2) return
+    setLiveSearching(true)
+    setLiveError('')
+    try {
+      const res = await searchExternalDestinations(liveQuery.trim())
+      setLiveResults(res?.items || [])
+      if (!res?.items || res.items.length === 0) {
+        setLiveError(`No destinations found for "${liveQuery}". Try another location.`)
+      }
+    } catch (err) {
+      setLiveError(err.message || 'Failed to search external destinations')
+    } finally {
+      setLiveSearching(false)
+    }
+  }
+
+  async function handleSelectDynamic(candidate) {
+    try {
+      setLiveSearching(true)
+      const res = await createDynamicDestination(candidate)
+      const imported = res?.destination || res
+      if (imported) {
+        onAddDestination?.(imported)
+        onChange({ destinationId: imported.id || imported.slug })
+        setShowLiveSearch(false)
+        setLiveResults([])
+        setLiveQuery('')
+      }
+    } catch (err) {
+      setLiveError(err.message || 'Failed to import destination')
+    } finally {
+      setLiveSearching(false)
+    }
+  }
 
   function handleSubmit(event) {
     event.preventDefault()
@@ -138,6 +181,63 @@ export default function PlanForm({ values, errors, destinations, selectedDestina
             </select>
           )}
         </Field>
+
+        <div style={{ marginTop: '-0.5rem', marginBottom: '1rem' }}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowLiveSearch(!showLiveSearch)}
+          >
+            <Sparkles aria-hidden="true" />
+            {showLiveSearch ? 'Close live search' : '🔍 Search any city / location via live Places API'}
+          </Button>
+
+          {showLiveSearch && (
+            <div style={{ background: '#f8fafc', padding: '0.85rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginTop: '0.5rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.35rem' }}>
+                Search any city worldwide (e.g. Vadodara, Pavagadh, Statue of Unity, Amritsar, Paris):
+              </label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  type="text"
+                  placeholder="Type a destination name..."
+                  value={liveQuery}
+                  onChange={(e) => setLiveQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleLiveSearch()
+                    }
+                  }}
+                  style={{ flex: 1, padding: '0.45rem 0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+                />
+                <Button type="button" size="sm" onClick={handleLiveSearch} busy={liveSearching}>
+                  Search
+                </Button>
+              </div>
+
+              {liveError && <p style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.4rem' }}>{liveError}</p>}
+
+              {liveResults.length > 0 && (
+                <div style={{ marginTop: '0.6rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>Discovered via Live API:</span>
+                  {liveResults.map((r) => (
+                    <div key={r.slug || r.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                      <div>
+                        <strong>{r.name}</strong>, {r.state} ({r.country})
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{r.tagline}</div>
+                      </div>
+                      <Button type="button" size="sm" variant="primary" onClick={() => handleSelectDynamic(r)} busy={liveSearching}>
+                        Select & Plan
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <div style={{ marginBottom: '1rem' }}>
           <Button

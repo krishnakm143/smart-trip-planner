@@ -22,6 +22,10 @@ export class ApiError extends Error {
     return new ApiError('VALIDATION_ERROR', message, details);
   }
 
+  static badRequest(message = 'Bad request', details) {
+    return new ApiError('VALIDATION_ERROR', message, details);
+  }
+
   static unauthorized(message = 'Authentication required') {
     return new ApiError('UNAUTHORIZED', message);
   }

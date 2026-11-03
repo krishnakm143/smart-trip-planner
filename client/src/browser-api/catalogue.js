@@ -10,7 +10,7 @@ const destinations = seedDestinations.map((destination) => ({
 }))
 
 const activities = destinations.flatMap((destination) =>
-  activitiesBySlug[destination.slug].map((activity) => ({
+  (activitiesBySlug[destination.slug] || []).map((activity) => ({
     id: stableId(`activity:${destination.slug}:${activity.name}`),
     destination: destination.id,
     ...activity,
@@ -35,3 +35,10 @@ export const findDestinationById = (id) => findDestination((destination) => dest
 
 export const findDestinationBySlug = (slug) =>
   findDestination((destination) => destination.slug === slug)
+
+export const addDestination = (destination) => {
+  const existing = destinations.find((d) => d.slug === destination.slug || d.id === destination.id)
+  if (existing) return existing
+  destinations.push(destination)
+  return destination
+}

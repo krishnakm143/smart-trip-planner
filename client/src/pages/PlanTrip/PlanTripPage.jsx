@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { useResource } from '../../hooks/useResource'
-import { listDestinations } from '../../services/destinationService'
+import { getDestination, listDestinations } from '../../services/destinationService'
 import { createTrip } from '../../services/tripService'
 import { fieldErrorsFrom } from '../../utils/fieldErrors'
 import { addDays, todayInputValue } from '../../utils/formatDate'
@@ -47,6 +47,7 @@ export default function PlanTripPage() {
 
   const [restoredInput] = useState(() => pendingPlan.read())
   const [values, setValues] = useState(() => restoredInput ?? defaultValues())
+  const [extraDestinations, setExtraDestinations] = useState([])
   const [fieldErrors, setFieldErrors] = useState({})
   const [saving, setSaving] = useState(false)
   const previewRef = useRef(null)
@@ -63,9 +64,38 @@ export default function PlanTripPage() {
   const destinations = useResource(loadDestinations)
 
   const prefillSlug = searchParams.get('destination')
-  const prefillId = destinations.data?.find((item) => item.slug === prefillSlug)?.id ?? ''
+
+  // Resolve prefill destination dynamically if not present in initial load
+  useEffect(() => {
+    if (!prefillSlug) return
+    const inLoaded = destinations.data?.find((item) => item.slug === prefillSlug)
+    const inExtra = extraDestinations.find((item) => item.slug === prefillSlug)
+
+    if (!inLoaded && !inExtra) {
+      getDestination(prefillSlug)
+        .then((res) => {
+          const dest = res?.destination || res
+          if (dest) {
+            setExtraDestinations((prev) => (prev.some((d) => d.slug === dest.slug) ? prev : [...prev, dest]))
+            setValues((current) => ({ ...current, destinationId: dest.id || dest.slug }))
+          }
+        })
+        .catch(() => {})
+    }
+  }, [prefillSlug, destinations.data, extraDestinations])
+
+  const allDestinations = [
+    ...(destinations.data || []),
+    ...extraDestinations.filter(
+      (extra) => !destinations.data?.some((d) => d.id === extra.id || d.slug === extra.slug),
+    ),
+  ]
+
+  const prefillId = allDestinations.find((item) => item.slug === prefillSlug)?.id ?? ''
   const planInput = { ...values, destinationId: values.destinationId ?? prefillId }
-  const selectedDestination = destinations.data?.find((item) => item.id === planInput.destinationId)
+  const selectedDestination = allDestinations.find(
+    (item) => item.id === planInput.destinationId || item.slug === planInput.destinationId,
+  )
 
   function handleChange(changes) {
     setValues((current) => ({ ...current, ...changes }))
@@ -74,6 +104,11 @@ export default function PlanTripPage() {
       Object.keys(changes).forEach((field) => delete next[field])
       return next
     })
+  }
+
+  function handleAddDestination(dest) {
+    setExtraDestinations((prev) => (prev.some((d) => d.slug === dest.slug) ? prev : [...prev, dest]))
+    setValues((current) => ({ ...current, destinationId: dest.id || dest.slug }))
   }
 
   async function handleGenerate() {
@@ -111,8 +146,7 @@ export default function PlanTripPage() {
       <header className={styles.header}>
         <h1 className={styles.heading}>Plan a trip</h1>
         <p className={styles.lede}>
-          Answer a few questions to get a day-wise itinerary and a cost estimate. Nothing is saved until you
-          choose to save it.
+          Answer a few questions to get a day-wise itinerary and a cost estimate. Search any destination live or pick from curated highlights.
         </p>
       </header>
 
@@ -122,10 +156,11 @@ export default function PlanTripPage() {
         <PlanForm
           values={planInput}
           errors={fieldErrors}
-          destinations={destinations.data}
+          destinations={allDestinations}
           selectedDestination={selectedDestination}
           busy={preview.status === 'loading'}
           onChange={handleChange}
+          onAddDestination={handleAddDestination}
           onSubmit={handleGenerate}
         />
       )}

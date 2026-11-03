@@ -19,7 +19,7 @@ export const ACTIVITY_TYPES = [
 ];
 
 export const BEST_TIMES = ['morning', 'afternoon', 'evening', 'any'];
-export const ACTIVITY_SOURCES = ['seed', 'google'];
+export const ACTIVITY_SOURCES = ['seed', 'google', 'osm', 'external'];
 export const BUDGET_TIERS = ['economy', 'standard', 'luxury'];
 export const PACES = ['relaxed', 'balanced', 'packed'];
 export const TRIP_STATUSES = ['planned', 'completed', 'cancelled'];

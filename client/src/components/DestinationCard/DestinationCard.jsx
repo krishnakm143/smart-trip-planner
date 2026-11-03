@@ -34,6 +34,9 @@ export default function DestinationCard({ destination, featured = false, heading
         <div className={styles.media}>
           <DestinationImage src={heroImage} name={name} />
           <span className={styles.category}>{labelFor(category)}</span>
+          {(destination.source === 'google' || destination.source === 'osm' || destination.source === 'curated-dynamic' || destination.isDynamic) && (
+            <span className={styles.dynamicBadge}>✨ Live API</span>
+          )}
         </div>
         <div className={styles.body}>
           <div className={styles.heading}>
@@ -41,7 +44,7 @@ export default function DestinationCard({ destination, featured = false, heading
             <span className={styles.rating}>
               <Star aria-hidden="true" />
               <span className="visually-hidden">Rated</span>
-              {rating.toFixed(1)}
+              {(rating ?? 4.5).toFixed(1)}
             </span>
           </div>
           <p className={styles.state}>{state}</p>
@@ -58,7 +61,7 @@ export default function DestinationCard({ destination, featured = false, heading
           <p className={styles.tagline}>{tagline}</p>
           <p className={styles.facts}>
             <span>
-              {idealDays.min}–{idealDays.max} days
+              {idealDays?.min ?? 2}–{idealDays?.max ?? 4} days
             </span>
             <span>from {formatCurrency(economyPerPersonPerDay(dailyCost))} a day per person</span>
           </p>

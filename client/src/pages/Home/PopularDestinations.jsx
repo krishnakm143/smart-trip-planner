@@ -26,7 +26,7 @@ export default function PopularDestinations() {
           Where travellers are heading
         </h2>
         <Link to="/destinations" className="text-link">
-          See all twelve destinations
+          See all destinations
         </Link>
       </div>
 

@@ -1,8 +1,14 @@
 import { Destination } from '../models/Destination.js';
 import { isDbConnected } from '../config/db.js';
+import { config } from '../config/env.js';
 import { getCatalogueDestinations } from './catalogueService.js';
 import { haversineKm, roundTo } from '../utils/geo.js';
 import { routeProvider } from '../providers/index.js';
+import {
+  findNearbyRegionalDestinations,
+  reverseGeocodeDestination,
+} from '../providers/dynamicDestinationProvider.js';
+import { importDynamicDestination } from './destinationService.js';
 
 /**
  * Finds catalogue destinations nearest to a browser-provided coordinate. The
@@ -27,6 +33,40 @@ export async function findNearestDestinations({ lat, lng, limit = 6 }) {
   });
 
   candidates.sort((a, b) => a.airKm - b.airKm);
+
+  // Discover dynamic nearby regional destinations and reverse-geocode when not in test mode
+  if (!config.isTest) {
+    try {
+      const nearbyRegional = await findNearbyRegionalDestinations(lat, lng, 160);
+      for (const regional of nearbyRegional) {
+        if (!candidates.some((c) => c.destination.slug === regional.slug)) {
+          const imported = await importDynamicDestination(regional);
+          const airKm = haversineKm(point, imported.location);
+          candidates.push({
+            destination: typeof imported.toJSON === 'function' ? imported.toJSON() : imported,
+            airKm,
+          });
+        }
+      }
+
+      if (candidates.length === 0 || candidates[0].airKm > 100) {
+        const localCandidate = await reverseGeocodeDestination(lat, lng);
+        if (localCandidate && !candidates.some((c) => c.destination.slug === localCandidate.slug)) {
+          const imported = await importDynamicDestination(localCandidate);
+          const airKm = haversineKm(point, imported.location);
+          candidates.push({
+            destination: typeof imported.toJSON === 'function' ? imported.toJSON() : imported,
+            airKm,
+          });
+        }
+      }
+
+      candidates.sort((a, b) => a.airKm - b.airKm);
+    } catch {
+      // Gracefully fall back to pre-seeded destinations
+    }
+  }
+
   const topCandidates = candidates.slice(0, Math.min(limit + 4, candidates.length));
 
   // 2. Compute driving road distances and durations

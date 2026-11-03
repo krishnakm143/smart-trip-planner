@@ -4,7 +4,9 @@ import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import {
   discoverQuerySchema,
+  dynamicDestinationSchema,
   listDestinationsQuerySchema,
+  searchExternalQuerySchema,
   slugParamSchema,
 } from '../validators/destinationValidators.js';
 
@@ -14,6 +16,16 @@ router.get(
   '/',
   validate({ query: listDestinationsQuerySchema }),
   asyncHandler(destinationController.list),
+);
+router.get(
+  '/external/search',
+  validate({ query: searchExternalQuerySchema }),
+  asyncHandler(destinationController.searchExternal),
+);
+router.post(
+  '/dynamic',
+  validate({ body: dynamicDestinationSchema }),
+  asyncHandler(destinationController.createDynamic),
 );
 router.get(
   '/places/photo',

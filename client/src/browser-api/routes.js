@@ -16,6 +16,8 @@ const ROUTES = [
   ['POST', '/auth/password/reset', auth.resetPassword],
   ['GET', '/auth/me', auth.me],
   ['GET', '/destinations', destinations.list],
+  ['GET', '/destinations/external/search', destinations.searchExternal],
+  ['POST', '/destinations/dynamic', destinations.createDynamic],
   ['GET', '/destinations/:slug', destinations.details],
   ['GET', '/destinations/:slug/discover', destinations.discover],
   ['GET', '/locations/nearest', locations.nearest],

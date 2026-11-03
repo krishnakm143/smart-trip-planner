@@ -7,6 +7,16 @@ export async function list(req, res) {
   sendSuccess(res, result);
 }
 
+export async function searchExternal(req, res) {
+  const items = await destinationService.searchExternalDestinations(req.valid.query.q);
+  sendSuccess(res, { items });
+}
+
+export async function createDynamic(req, res) {
+  const destination = await destinationService.importDynamicDestination(req.valid.body);
+  sendSuccess(res, { destination }, { status: 201 });
+}
+
 export async function getBySlug(req, res) {
   const details = await destinationService.getDestinationDetails(req.valid.params.slug);
   sendSuccess(res, details);
