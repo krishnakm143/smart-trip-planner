@@ -12,7 +12,20 @@ function economyPerPersonPerDay(dailyCost) {
 }
 
 export default function DestinationCard({ destination, featured = false, headingLevel = 'h2' }) {
-  const { slug, name, state, category, tagline, heroImage, rating, idealDays, dailyCost, distanceKm } = destination
+  const {
+    slug,
+    name,
+    state,
+    category,
+    tagline,
+    heroImage,
+    rating,
+    idealDays,
+    dailyCost,
+    distanceKm,
+    drivingMinutes,
+    distanceType,
+  } = destination
   const HeadingTag = headingLevel
 
   return (
@@ -34,7 +47,12 @@ export default function DestinationCard({ destination, featured = false, heading
           <p className={styles.state}>{state}</p>
           {typeof distanceKm === 'number' && (
             <p className={styles.distance}>
-              <MapPin aria-hidden="true" /> {distanceKm.toLocaleString('en-IN')} km away
+              <MapPin aria-hidden="true" /> {distanceKm.toLocaleString('en-IN')} km {distanceType === 'road' ? 'by road' : 'away'}
+              {typeof drivingMinutes === 'number' && drivingMinutes > 0 && (
+                <span className={styles.driveTime}>
+                  {' '}(~{drivingMinutes >= 60 ? `${(drivingMinutes / 60).toFixed(drivingMinutes % 60 === 0 ? 0 : 1)}h` : `${drivingMinutes}m`} drive)
+                </span>
+              )}
             </p>
           )}
           <p className={styles.tagline}>{tagline}</p>

@@ -90,6 +90,12 @@
   height: 0.95rem;
 }
 
+.driveTime {
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-size: var(--text-xs);
+}
+
 .tagline {
   margin-top: var(--space-2);
   color: var(--ink-soft);

@@ -1,13 +1,24 @@
 import { haversineKm, roundTo } from '../../utils/geo.js';
 
-const ROAD_FACTOR = 1.3;
-const AVERAGE_SPEED_KMH = 25;
+const CITY_ROAD_FACTOR = 1.3;
+const HIGHWAY_ROAD_FACTOR = 1.38;
+const CITY_SPEED_KMH = 25;
+const HIGHWAY_SPEED_KMH = 55;
 
 function estimateLeg(from, to) {
-  const km = haversineKm(from, to) * ROAD_FACTOR;
+  const airKm = haversineKm(from, to);
+  if (airKm < 0.05) {
+    return { km: 0, minutes: 0 };
+  }
+
+  const isHighway = airKm > 40;
+  const factor = isHighway ? HIGHWAY_ROAD_FACTOR : CITY_ROAD_FACTOR;
+  const speed = isHighway ? HIGHWAY_SPEED_KMH : CITY_SPEED_KMH;
+  const km = roundTo(airKm * factor, 1);
+
   return {
-    km: roundTo(km, 1),
-    minutes: Math.round((km / AVERAGE_SPEED_KMH) * 60),
+    km,
+    minutes: Math.max(1, Math.round((km / speed) * 60)),
   };
 }
 

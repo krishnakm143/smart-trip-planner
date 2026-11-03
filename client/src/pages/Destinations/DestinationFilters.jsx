@@ -53,7 +53,7 @@ export default function DestinationFilters({
         {nearMe ? (
           <>
             <p className={styles.locationStatus} role="status">
-              Showing destinations nearest to you (sorted by distance).
+              Showing destinations nearest to you (sorted by driving road distance).
             </p>
             <Button variant="ghost" size="sm" onClick={onClearLocation}>
               <X aria-hidden="true" />
