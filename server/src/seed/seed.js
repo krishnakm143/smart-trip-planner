@@ -90,9 +90,13 @@ async function run() {
   console.log(`Demo login: ${sampleUsers[0].email} / ${SAMPLE_PASSWORD}`);
 }
 
-run()
-  .catch((error) => {
-    console.error(`Seeding failed: ${error.message}`);
-    process.exitCode = 1;
-  })
-  .finally(disconnectDb);
+export { seedDestinations, seedUsers, seedTrips };
+
+if (process.argv[1] && (process.argv[1].endsWith('seed.js') || process.argv[1].endsWith('seed'))) {
+  run()
+    .catch((error) => {
+      console.error(`Seeding failed: ${error.message}`);
+      process.exitCode = 1;
+    })
+    .finally(disconnectDb);
+}

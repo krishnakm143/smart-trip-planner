@@ -37,11 +37,13 @@ const fallbacks = { route: localRouteProvider, places: localPlacesProvider };
 function createProviders(name) {
   if (name === 'google') {
     const apiKey = config.googleMapsApiKey;
+    const osmPlaces = createOsmPlacesProvider({ fallback: fallbacks.places });
+    const osmRoute = createOsmRouteProvider({ fallback: fallbacks.route });
     return {
-      route: createGoogleRouteProvider({ apiKey, fallback: fallbacks.route }),
+      route: createGoogleRouteProvider({ apiKey, fallback: osmRoute }),
       places: createGooglePlacesProvider({
         apiKey,
-        fallback: fallbacks.places,
+        fallback: osmPlaces,
       }),
     };
   }

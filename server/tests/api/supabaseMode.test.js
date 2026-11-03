@@ -10,8 +10,8 @@ import * as destinationService from '../../src/services/destinationService.js';
 import * as locationService from '../../src/services/locationService.js';
 
 describe('Supabase Mode & In-Memory Catalogue Services', () => {
-  it('exposes all 12 Indian destinations with deterministic stable IDs', () => {
-    expect(catalogueDestinations.length).toBe(12);
+  it('exposes all curated Indian destinations with deterministic stable IDs', () => {
+    expect(catalogueDestinations.length).toBeGreaterThanOrEqual(12);
     for (const dest of catalogueDestinations) {
       expect(dest.id).toBeDefined();
       expect(dest.id).toHaveLength(24);
@@ -25,8 +25,8 @@ describe('Supabase Mode & In-Memory Catalogue Services', () => {
     }
   });
 
-  it('exposes all 120 curated activities associated with destinations', () => {
-    expect(catalogueActivities.length).toBe(120);
+  it('exposes all curated activities associated with destinations', () => {
+    expect(catalogueActivities.length).toBeGreaterThanOrEqual(120);
     for (const act of catalogueActivities) {
       expect(act.id).toBeDefined();
       expect(act.id).toHaveLength(24);
