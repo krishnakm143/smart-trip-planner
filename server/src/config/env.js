@@ -30,7 +30,7 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().trim().optional(),
   // Optional AI provider. Kept server-side: never expose this in Vite variables.
   GROQ_API_KEY: z.string().trim().default(''),
-  GROQ_MODEL: z.string().trim().default('llama-3.3-70b-versatile'),
+  GROQ_MODEL: z.string().trim().default('openai/gpt-oss-120b'),
   // Optional transactional email provider for OTP & trip interactions.
   BREVO_API_KEY: z.string().trim().default(''),
   BREVO_SENDER_EMAIL: z.string().trim().default('notifications@smarttripplanner.com'),
