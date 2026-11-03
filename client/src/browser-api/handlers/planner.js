@@ -1,4 +1,4 @@
-import { generateDeterministicAssistantReply } from '@server/services/aiService.js'
+import { generateDeterministicAssistantReply } from '@server/utils/assistantReply.js'
 import { estimateBudget } from '@server/services/budgetService.js'
 import { allDestinations, findDestinationById } from '../catalogue'
 import { buildPlan } from '../planner'

@@ -1,5 +1,5 @@
 import { ApiError } from '@server/utils/ApiError.js'
-import { calculateSettlements } from '@server/services/expenseService.js'
+import { calculateSettlements } from '@server/utils/settlementCalculator.js'
 import { randomId } from '../ids'
 import { expenses, trips } from '../store'
 import { validateExpense } from '../validate'
