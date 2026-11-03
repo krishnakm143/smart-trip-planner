@@ -345,50 +345,60 @@ async function searchGooglePlaces(apiKey, query) {
     }),
   });
 
-  return (body.places ?? [])
-    .filter((p) => p.displayName?.text && p.location)
-    .map((p) => {
-      const name = p.displayName.text;
-      const addressParts = (p.formattedAddress || '').split(',').map((s) => s.trim());
-      const country = addressParts.length > 1 ? addressParts[addressParts.length - 1] : 'India';
-      const state = addressParts.length > 2 ? addressParts[addressParts.length - 2] : addressParts[0] || 'Region';
-      const types = p.types || [];
-      const category = inferCategory(types, `${name} ${p.formattedAddress || ''}`);
-      const slug = slugify(name);
+  const seenSlugs = new Set();
+  const candidates = [];
 
-      let heroImage = CATEGORY_IMAGES[category] || CATEGORY_IMAGES.heritage;
-      if (p.photos && p.photos.length > 0 && p.photos[0].name) {
-        heroImage = `/api/v1/destinations/places/photo?name=${encodeURIComponent(p.photos[0].name)}`;
-      }
+  for (const p of body.places ?? []) {
+    if (!p.displayName?.text || !p.location) continue;
+    const name = p.displayName.text;
+    const addressParts = (p.formattedAddress || '').split(',').map((s) => s.trim());
+    const country = addressParts.length > 1 ? addressParts[addressParts.length - 1] : 'India';
+    const state = addressParts.length > 2 ? addressParts[addressParts.length - 2] : addressParts[0] || 'Region';
+    const types = p.types || [];
+    const category = inferCategory(types, `${name} ${p.formattedAddress || ''}`);
 
-      const tagline = p.editorialSummary?.text
-        ? (p.editorialSummary.text.length > 90 ? p.editorialSummary.text.slice(0, 87) + '…' : p.editorialSummary.text)
-        : generateTagline(name, state, category);
+    let slug = slugify(name);
+    if (seenSlugs.has(slug)) {
+      slug = slugify(`${name}-${state || country}`);
+    }
+    if (seenSlugs.has(slug)) continue;
+    seenSlugs.add(slug);
 
-      const description = p.editorialSummary?.text || generateDescription(name, state, country, category);
+    let heroImage = CATEGORY_IMAGES[category] || CATEGORY_IMAGES.heritage;
+    if (p.photos && p.photos.length > 0 && p.photos[0].name) {
+      heroImage = `/api/v1/destinations/places/photo?name=${encodeURIComponent(p.photos[0].name)}`;
+    }
 
-      return {
-        name,
-        slug,
-        state,
-        country,
-        category,
-        tagline,
-        description,
-        heroImage,
-        location: {
-          lat: p.location.latitude,
-          lng: p.location.longitude,
-        },
-        bestSeason: inferSeason(category),
-        idealDays: { min: 2, max: 4 },
-        dailyCost: estimateDailyCost(category, country),
-        rating: p.rating ? Math.min(5, Math.max(0, p.rating)) : 4.5,
-        tags: [category, 'travel', 'sightseeing', slug],
-        source: 'google',
-        externalId: p.id,
-      };
+    const tagline = p.editorialSummary?.text
+      ? (p.editorialSummary.text.length > 90 ? p.editorialSummary.text.slice(0, 87) + '…' : p.editorialSummary.text)
+      : generateTagline(name, state, category);
+
+    const description = p.editorialSummary?.text || generateDescription(name, state, country, category);
+
+    candidates.push({
+      name,
+      slug,
+      state,
+      country,
+      category,
+      tagline,
+      description,
+      heroImage,
+      location: {
+        lat: p.location.latitude,
+        lng: p.location.longitude,
+      },
+      bestSeason: inferSeason(category),
+      idealDays: { min: 2, max: 4 },
+      dailyCost: estimateDailyCost(category, country),
+      rating: p.rating ? Math.min(5, Math.max(0, p.rating)) : 4.5,
+      tags: [category, 'travel', 'sightseeing', slug],
+      source: 'google',
+      externalId: p.id,
     });
+  }
+
+  return candidates;
 }
 
 /**

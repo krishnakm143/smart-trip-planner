@@ -56,7 +56,13 @@ export async function listDestinations({ search, category, page = 1, limit = 12 
         );
 
         const existingSlugs = new Set(result.items.map((i) => i.slug));
-        const newItems = importedList.filter((item) => item && !existingSlugs.has(item.slug));
+        const newItems = [];
+        for (const item of importedList) {
+          if (item && !existingSlugs.has(item.slug)) {
+            newItems.push(item);
+            existingSlugs.add(item.slug);
+          }
+        }
 
         if (newItems.length > 0) {
           result.items = [...result.items, ...newItems];
