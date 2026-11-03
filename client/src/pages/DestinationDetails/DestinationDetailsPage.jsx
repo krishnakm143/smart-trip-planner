@@ -47,7 +47,7 @@ export default function DestinationDetailsPage() {
   return (
     <article>
       <header className={styles.hero}>
-        <DestinationImage src={destination.heroImage} name={destination.name} alt="" eager className={styles.heroImage} />
+        <DestinationImage src={destination.heroImage} name={destination.name} category={destination.category} alt="" eager className={styles.heroImage} />
         <div className={styles.scrim} />
         <div className={`container ${styles.heroText}`}>
           <nav aria-label="Breadcrumb" className={styles.breadcrumb}>

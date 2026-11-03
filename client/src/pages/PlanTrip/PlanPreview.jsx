@@ -20,7 +20,7 @@ export default function PlanPreview({ plan, input, stale, restored, signedIn, sa
   return (
     <section aria-labelledby="preview-heading" className={styles.preview}>
       <header className={styles.banner}>
-        <DestinationImage src={destination.heroImage} name={destination.name} className={styles.bannerImage} />
+        <DestinationImage src={destination.heroImage} name={destination.name} category={destination.category} className={styles.bannerImage} />
         <div className={styles.bannerScrim} />
         <div className={styles.bannerText}>
           <h2 id="preview-heading" className={styles.title}>

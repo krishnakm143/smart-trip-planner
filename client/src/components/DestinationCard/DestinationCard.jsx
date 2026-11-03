@@ -32,7 +32,7 @@ export default function DestinationCard({ destination, featured = false, heading
     <article className={`${styles.card} ${featured ? styles.featured : ''}`}>
       <Link to={`/destinations/${slug}`} className={styles.link}>
         <div className={styles.media}>
-          <DestinationImage src={heroImage} name={name} />
+          <DestinationImage src={heroImage} name={name} category={category} />
           <span className={styles.category}>{labelFor(category)}</span>
           {(destination.source === 'google' || destination.source === 'osm' || destination.source === 'curated-dynamic' || destination.isDynamic) && (
             <span className={styles.dynamicBadge}>✨ Live API</span>

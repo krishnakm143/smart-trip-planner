@@ -74,7 +74,7 @@ export default function TripCard({ trip, onDuplicated }) {
     <article className={styles.card}>
       <Link to={`/trips/${trip.id}`} className={styles.cardTop}>
         <div className={styles.media}>
-          <DestinationImage src={destination.heroImage} name={destination.name} />
+          <DestinationImage src={destination.heroImage} name={destination.name} category={destination.category} />
         </div>
         <div className={styles.body}>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>

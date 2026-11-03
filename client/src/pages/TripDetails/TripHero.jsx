@@ -8,7 +8,7 @@ export default function TripHero({ trip }) {
 
   return (
     <header className={styles.hero}>
-      <DestinationImage src={destination.heroImage} name={destination.name} eager className={styles.image} />
+      <DestinationImage src={destination.heroImage} name={destination.name} category={destination.category} eager className={styles.image} />
       <div className={styles.scrim} />
       <div className={`container ${styles.text}`}>
         <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
