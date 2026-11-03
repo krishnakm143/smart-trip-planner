@@ -23,19 +23,14 @@ export default function TierCards({
           const rooms = Math.ceil(travelers / 2)
           const nights = Math.max(days - 1, 1)
 
-          // If scenario is available, use scenario totals; otherwise calculate using standard formula
-          const dailyTotal = scenario
-            ? scenario.dailyTotal
-            : cost
-              ? cost.stay * rooms + (cost.food + cost.transport) * travelers
-              : 0
-          const tripTotal = scenario ? scenario.total : dailyTotal * days
-          const perPerson = scenario ? scenario.perPerson : Math.round(tripTotal / Math.max(1, travelers))
-
           const stayCost = scenario ? scenario.breakdown.stay : (cost?.stay ?? 0) * rooms * nights
           const foodCost = scenario ? scenario.breakdown.food : (cost?.food ?? 0) * travelers * days
           const transportCost = scenario ? scenario.breakdown.transport : (cost?.transport ?? 0) * travelers * days
           const activitiesCost = scenario ? scenario.breakdown.activities : 0
+
+          const tripTotal = scenario ? scenario.total : (stayCost + foodCost + transportCost + activitiesCost)
+          const dailyTotal = scenario ? scenario.dailyTotal : Math.round(tripTotal / Math.max(1, days))
+          const perPerson = scenario ? scenario.perPerson : Math.round(tripTotal / Math.max(1, travelers))
 
           const isAchievable = scenario ? scenario.isAchievable : maxBudget ? tripTotal <= maxBudget : true
           const diff = maxBudget !== undefined && maxBudget !== null ? maxBudget - tripTotal : null

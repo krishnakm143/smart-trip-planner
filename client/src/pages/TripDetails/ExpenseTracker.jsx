@@ -190,7 +190,7 @@ export default function ExpenseTracker({ trip }) {
           </div>
         </div>
 
-        <div className={styles.progressTrack} role="progressbar" aria-valuenow={percentUsed} aria-valuemin={0} aria-valuemax={100}>
+        <div className={styles.progressTrack} role="progressbar" aria-label="Trip budget spent percentage" aria-valuenow={percentUsed} aria-valuemin={0} aria-valuemax={100}>
           <div
             className={`${styles.progressBar} ${
               isOverBudget ? styles.barDanger : percentUsed > 80 ? styles.barWarning : styles.barNormal

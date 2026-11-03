@@ -54,7 +54,7 @@ export default function PlanPreview({ plan, input, stale, restored, signedIn, sa
           </p>
         </div>
 
-        <aside className={styles.side} aria-label="Budget and save">
+        <div className={styles.side}>
           <h3 className={styles.columnHeading}>Budget</h3>
           <BudgetBreakdown budget={budget} travelers={input.travelers} days={days} />
           <div className={styles.save}>
@@ -64,7 +64,7 @@ export default function PlanPreview({ plan, input, stale, restored, signedIn, sa
             </Button>
             {!signedIn && <p className={styles.saveHint}>You will be asked to log in first. Your plan is kept while you do.</p>}
           </div>
-        </aside>
+        </div>
       </div>
     </section>
   )

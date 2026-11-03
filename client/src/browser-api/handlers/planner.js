@@ -16,6 +16,9 @@ export async function preview({ body }) {
       days: plan.days,
       itinerary: plan.itinerary,
       budget: plan.budget,
+      budgetTier: plan.budgetTier,
+      scenarios: plan.scenarios,
+      feasibility: plan.feasibility,
     },
     meta: { provider: plan.provider },
   }
