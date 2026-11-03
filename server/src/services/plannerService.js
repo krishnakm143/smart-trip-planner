@@ -1,7 +1,7 @@
 import { Activity } from '../models/Activity.js';
 import { isDbConnected } from '../config/db.js';
 import { getCatalogueActivities } from './catalogueService.js';
-import { routeProvider } from '../providers/index.js';
+import { placesProvider, routeProvider } from '../providers/index.js';
 import { daysBetweenInclusive, parseDateOnly } from '../utils/time.js';
 import {
   assessBudgetFeasibility,
@@ -88,6 +88,36 @@ export async function buildPlan({
 
   if (!activities || activities.length === 0) {
     activities = getCatalogueActivities(destination.slug || destination.id);
+  }
+
+  // Enrich with live Google Places when the Google provider is active
+  if (placesProvider && placesProvider.name === 'google') {
+    try {
+      const discovered = await placesProvider.discover(destination, 'sightseeing');
+      if (discovered?.items?.length) {
+        const existingNames = new Set(activities.map((a) => a.name.toLowerCase().trim()));
+        discovered.items.forEach((p, idx) => {
+          const norm = p.name.toLowerCase().trim();
+          if (!existingNames.has(norm)) {
+            activities.push({
+              id: p.externalId || `google_${destination.slug || destination.id}_${idx}`,
+              name: p.name,
+              type: p.type || 'culture',
+              location: p.location,
+              durationHours: 2,
+              entryFee: p.type === 'heritage' || p.type === 'culture' ? 100 : 0,
+              rating: p.rating || 4.5,
+              bestTime: idx % 3 === 0 ? 'morning' : (idx % 3 === 1 ? 'afternoon' : 'evening'),
+              address: p.address,
+              source: 'google',
+            });
+            existingNames.add(norm);
+          }
+        });
+      }
+    } catch {
+      // Fallback cleanly to seeded catalogue activities
+    }
   }
 
   const plannableActivities = activities.map(toPlannable);

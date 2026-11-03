@@ -125,9 +125,6 @@ export async function generateItinerary({
   routeProvider,
   budgetTier = 'standard',
 }) {
-  const matrix = await routeProvider.getMatrix(activities.map((activity) => activity.location));
-  const capacity = HOURS_PER_DAY[pace] ?? HOURS_PER_DAY.balanced;
-
   // For economy tier, filter out optional expensive activities (> ₹200) if affordable alternatives exist
   let eligibleActivities = activities;
   if (budgetTier === 'economy') {
@@ -136,6 +133,9 @@ export async function generateItinerary({
       eligibleActivities = affordable;
     }
   }
+
+  const matrix = await routeProvider.getMatrix(eligibleActivities.map((activity) => activity.location));
+  const capacity = HOURS_PER_DAY[pace] ?? HOURS_PER_DAY.balanced;
 
   let pool = eligibleActivities
     .map((activity, index) => {

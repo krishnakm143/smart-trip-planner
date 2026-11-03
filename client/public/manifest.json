@@ -2,22 +2,22 @@
   "name": "Smart Trip Planner",
   "short_name": "TripPlanner",
   "description": "Plan a day-wise itinerary and an honest budget for twelve Indian destinations.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#f3eee3",
   "theme_color": "#0e5e5a",
   "orientation": "portrait-primary",
   "lang": "en-IN",
-  "scope": "/",
+  "scope": "./",
   "icons": [
     {
-      "src": "/apple-touch-icon.png",
+      "src": "apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/favicon.svg",
+      "src": "favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
@@ -29,15 +29,15 @@
       "name": "Plan a Trip",
       "short_name": "Plan",
       "description": "Start planning a new trip",
-      "url": "/plan",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "url": "plan",
+      "icons": [{ "src": "favicon.svg", "sizes": "any" }]
     },
     {
       "name": "My Trips",
       "short_name": "Trips",
       "description": "View your saved trips",
-      "url": "/trips",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "url": "trips",
+      "icons": [{ "src": "favicon.svg", "sizes": "any" }]
     }
   ]
 }

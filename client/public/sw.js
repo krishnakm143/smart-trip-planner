@@ -6,13 +6,13 @@
 
 const CACHE_NAME = 'stp-shell-v1'
 
-// App shell assets to cache on install
+// App shell assets to cache on install (relative to registration scope)
 const SHELL_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.svg',
-  '/apple-touch-icon.png',
+  './',
+  './index.html',
+  './manifest.json',
+  './favicon.svg',
+  './apple-touch-icon.png',
 ]
 
 // Install: cache the shell
@@ -20,7 +20,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => cache.addAll(SHELL_ASSETS))
+      .then((cache) => cache.addAll(SHELL_ASSETS).catch(() => {}))
       .then(() => self.skipWaiting()),
   )
 })
